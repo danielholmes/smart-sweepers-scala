@@ -1,4 +1,4 @@
-# Smart Sweepers Java
+# Smart Sweepers Scala
 
 Attempt to port (http://www.ai-junkie.com/ann/evolved/nnt1.html) C++ solution to Scala
 
