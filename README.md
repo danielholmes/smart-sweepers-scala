@@ -1,19 +1,28 @@
-# Smart Sweepers Scala
+# Neural Network Minesweeper
 
-Attempt to port (http://www.ai-junkie.com/ann/evolved/nnt1.html) C++ solution to Scala
-
-All class/struct, property and variable names are kept consistent with the C++ source to try and ensure an exact port
-of functionality and to make it easier to follow the tutorial and code.
-
-Rendering is pretty different though as it won't use the windows APIs: this mainly affects CController and Main.
+An implementation of the the tutorial outlined here: (http://www.ai-junkie.com/ann/evolved/nnt1.html)
 
 
 ## Dependencies
 
- - Scala 2.11+
- - Gradle
+ - SBT
+ - JDK 8+
+ - Scala 2.11
+
+
+## Tests
+
+ - All: `sbt test`
+ - Individual: `sbt 'test-only org.danielholmes.nnmine.nn.NeuralNetSpec'`
+ - Individual continuous: `sbt ~'test-only org.danielholmes.nnmine.nn.NeuralNetSpec'`
 
 
 ## Running
 
-`./sbt run`
+`sbt run`
+
+
+## Ideas
+ 
+ - Possibly more expensive, but is running in isolation better? Atm their fitness is impacted by other agents getting to 
+   mines before them

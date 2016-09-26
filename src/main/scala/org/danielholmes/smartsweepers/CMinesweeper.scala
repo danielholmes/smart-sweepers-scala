@@ -1,8 +1,10 @@
 package org.danielholmes.smartsweepers
 
 import java.util
+
 import org.danielholmes.smartsweepers.Utils.Clamp
 import org.danielholmes.smartsweepers.Utils.RandFloat
+import org.danielholmes.smartsweepers.nn.CNeuralNet
 
 class CMinesweeper() {
   m_ItsBrain = new CNeuralNet
@@ -135,8 +137,8 @@ class CMinesweeper() {
   def Rotation: Double = m_dRotation
 
   def PutWeights(w: util.Vector[Double]) {
-    m_ItsBrain.PutWeights(w)
+    m_ItsBrain.putWeights(w)
   }
 
-  def GetNumberOfWeights: Int = m_ItsBrain.GetNumberOfWeights
+  def GetNumberOfWeights: Int = m_ItsBrain.numberOfWeights
 }
