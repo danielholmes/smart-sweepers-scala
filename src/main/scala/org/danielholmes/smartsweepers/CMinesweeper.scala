@@ -58,25 +58,23 @@ class CMinesweeper() {
   //	and acceleration and apply to current velocity vector.
 
   def Update(mines: util.List[SVector2D]): Boolean = {
-    //this will store all the inputs for the NN
-    var inputs: util.List[Double] = new util.ArrayList[Double]
     //get vector to closest mine
     val vClosestMine: SVector2D = GetClosestMine(mines)
     //normalise it
     vClosestMine.Vec2DNormalize()
     //add in vector to closest mine
-    inputs.add(vClosestMine.x)
-    inputs.add(vClosestMine.y)
-    //add in sweepers look at vector
-    inputs.add(m_vLookAt.x)
-    inputs.add(m_vLookAt.y)
-    //update the brain and get feedback
-    val output: util.List[Double] = m_ItsBrain.Update(inputs)
+    val inputs = List(
+      vClosestMine.x,
+      vClosestMine.y,
+      m_vLookAt.x,
+      m_vLookAt.y
+    )
+    val output = m_ItsBrain.update(inputs)
     //make sure there were no errors in calculating the output
     assert(output.size == CParams.iNumOutputs, output.size + " outputs doesn't equal expected " + CParams.iNumOutputs)
     //assign the outputs to the sweepers left & right tracks
-    m_lTrack = output.get(0)
-    m_rTrack = output.get(1)
+    m_lTrack = output(0)
+    m_rTrack = output(1)
     //calculate steering forces
     var RotForce: Double = m_lTrack - m_rTrack
     //clamp rotation

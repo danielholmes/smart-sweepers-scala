@@ -1,15 +1,13 @@
 package org.danielholmes.smartsweepers.nn
 
-import java.util
-import scala.collection.JavaConverters._
+case class NeuronLayer(neurons: List[Neuron]) {
+  val numNeurons = neurons.size
 
-class NeuronLayer(var numNeurons: Int, val numInputsPerNeuron: Int) {
-  var neurons = new util.ArrayList[Neuron]
-  for (i <- 0 until numNeurons) {
-    neurons.add(Neuron(numInputsPerNeuron))
-  }
+  def getOutputs(inputs: List[Double]): List[Double] = neurons.map(_.getActivation(inputs))
+}
 
-  def getOutputs(inputs: List[Double]): List[Double] = {
-    neurons.asScala.map(_.getActivation(inputs)).toList
+object NeuronLayer {
+  def apply(aNumNeurons: Int, aNumInputsPerNeuron: Int): NeuronLayer = {
+    NeuronLayer(List.fill(aNumNeurons) { Neuron(aNumInputsPerNeuron) })
   }
 }
