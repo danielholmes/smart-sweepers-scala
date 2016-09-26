@@ -3,11 +3,7 @@ package org.danielholmes.smartsweepers.nn
 import org.danielholmes.smartsweepers.CParams
 import scala.util.Random
 
-class Neuron(val inputWeights: List[Double]) {
-  def this(numInputs: Int) = {
-    this(List.fill(numInputs + 1) { new Random().nextDouble - new Random().nextDouble })
-  }
-
+case class Neuron(inputWeights: List[Double]) {
   val numInputs = inputWeights.size
   // TODO: Remove from "regular" weights
   val biasWeight = inputWeights.last
@@ -25,4 +21,10 @@ class Neuron(val inputWeights: List[Double]) {
   }
 
   private def sigmoid(netInput: Double, response: Double): Double = 1 / (1 + Math.exp(-netInput / response))
+}
+
+object Neuron {
+  def apply(numInputs: Int): Neuron = {
+    Neuron(List.fill(numInputs + 1) { new Random().nextDouble - new Random().nextDouble })
+  }
 }

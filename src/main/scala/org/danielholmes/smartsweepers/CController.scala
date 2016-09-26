@@ -11,19 +11,19 @@ import org.danielholmes.smartsweepers.Utils.RandFloat
 //-----------------------------------------------------------------------
 class CController() {
   //storage for the population of genomes
-  private var m_vecThePopulation: util.Vector[SGenome] = _
+  private var m_vecThePopulation: util.List[SGenome] = _
   //and the minesweepers
-  private var m_vecSweepers: util.Vector[CMinesweeper] = new util.Vector[CMinesweeper]
+  private var m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
   //and the mines
-  private var m_vecMines: util.Vector[SVector2D] = new util.Vector[SVector2D]
+  private var m_vecMines: util.List[SVector2D] = new util.ArrayList[SVector2D]
   //pointer to the GA
   private var m_pGA: CGenAlg = _
   private var m_NumWeightsInNN: Int = 0
   //stores the average fitness per generation for use
   //in graphing.
-  private var m_vecAvFitness: util.Vector[Double] = new util.Vector[Double]
+  private var m_vecAvFitness: util.List[Double] = new util.ArrayList[Double]
   //stores the best fitness per generation
-  private var m_vecBestFitness: util.Vector[Double] = new util.Vector[Double]
+  private var m_vecBestFitness: util.List[Double] = new util.ArrayList[Double]
   //toggles the speed at which the simulation runs
   private var m_bFastRender: Boolean = false
   //cycles per generation
@@ -176,7 +176,7 @@ class CController() {
     plotGraph(g, Color.BLUE, m_vecAvFitness)
   }
 
-  private def plotGraph(g: Graphics2D, color: Color, values: util.Vector[Double]) {
+  private def plotGraph(g: Graphics2D, color: Color, values: util.List[Double]) {
     //render the graph
     val HSlice: Double = cxClient.toFloat / (m_iGenerations + 1)
     val VSlice: Double = cyClient.toFloat / ((m_pGA.BestFitness + 1) * 2)

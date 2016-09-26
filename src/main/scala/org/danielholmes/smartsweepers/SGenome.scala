@@ -4,10 +4,10 @@ import java.util
 import java.lang
 
 class SGenome() extends Comparable[SGenome] {
-  var vecWeights = new util.Vector[Double]
+  var vecWeights: util.List[Double] = new util.ArrayList[Double]
   var dFitness = 0.0
 
-  def this(w: util.Vector[Double], f: Double) {
+  def this(w: util.List[Double], f: Double) {
     this()
     vecWeights = w
     dFitness = f

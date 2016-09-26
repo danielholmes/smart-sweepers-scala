@@ -57,9 +57,9 @@ class CMinesweeper() {
   //	So given a force for each track we calculate the resultant rotation
   //	and acceleration and apply to current velocity vector.
 
-  def Update(mines: util.Vector[SVector2D]): Boolean = {
+  def Update(mines: util.List[SVector2D]): Boolean = {
     //this will store all the inputs for the NN
-    var inputs: util.Vector[Double] = new util.Vector[Double]
+    var inputs: util.List[Double] = new util.ArrayList[Double]
     //get vector to closest mine
     val vClosestMine: SVector2D = GetClosestMine(mines)
     //normalise it
@@ -71,7 +71,7 @@ class CMinesweeper() {
     inputs.add(m_vLookAt.x)
     inputs.add(m_vLookAt.y)
     //update the brain and get feedback
-    val output: util.Vector[Double] = m_ItsBrain.Update(inputs)
+    val output: util.List[Double] = m_ItsBrain.Update(inputs)
     //make sure there were no errors in calculating the output
     assert(output.size == CParams.iNumOutputs, output.size + " outputs doesn't equal expected " + CParams.iNumOutputs)
     //assign the outputs to the sweepers left & right tracks
@@ -97,7 +97,7 @@ class CMinesweeper() {
   }
 
   //	returns the vector from the sweeper to the closest mine
-  private def GetClosestMine(mines: util.Vector[SVector2D]): SVector2D = {
+  private def GetClosestMine(mines: util.List[SVector2D]): SVector2D = {
     var closest_so_far: Double = 99999
     var vClosestObject: SVector2D = new SVector2D(0, 0)
     //cycle through mines to find closest
@@ -120,7 +120,7 @@ class CMinesweeper() {
 
   //  this function checks for collision with its closest mine (calculated
   //  earlier and stored in m_iClosestMine)
-  def CheckForMine(mines: util.Vector[SVector2D], size: Double): Int = {
+  def CheckForMine(mines: util.List[SVector2D], size: Double): Int = {
     val DistToObject: SVector2D = m_vPosition.minus(mines.get(m_iClosestMine))
     if (DistToObject.Vec2DLength < (size + 5)) return m_iClosestMine
     -1
@@ -136,7 +136,7 @@ class CMinesweeper() {
 
   def Rotation: Double = m_dRotation
 
-  def PutWeights(w: util.Vector[Double]) {
+  def PutWeights(w: util.List[Double]) {
     m_ItsBrain.putWeights(w)
   }
 

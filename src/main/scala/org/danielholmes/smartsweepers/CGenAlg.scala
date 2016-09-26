@@ -21,7 +21,7 @@ class CGenAlg(// size of population
   //average fitness
   private var m_dAverageFitness: Double = .0
   //this holds the entire population of chromosomes
-  private var m_vecPop = new util.Vector[SGenome]
+  private var m_vecPop: util.List[SGenome] = new util.ArrayList[SGenome]
   //keeps track of the best genome
   private var m_iFittestGenome: Int = 0
   //generation counter
@@ -47,7 +47,7 @@ class CGenAlg(// size of population
     }
   }
 
-  private def Crossover(mum: util.Vector[Double], dad: util.Vector[Double], baby1: util.Vector[Double], baby2: util.Vector[Double]) {
+  private def Crossover(mum: util.List[Double], dad: util.List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
     //just return parents as offspring dependent on the rate
     //or if parents are the same
     if ((RandFloat > m_dCrossoverRate) || (mum eq dad)) {
@@ -69,7 +69,7 @@ class CGenAlg(// size of population
     }
   }
 
-  private def Mutate(chromo: util.Vector[Double]) {
+  private def Mutate(chromo: util.List[Double]) {
     //traverse the chromosome and mutate each weight dependent
     //on the mutation rate
     var i: Int = 0
@@ -115,7 +115,7 @@ class CGenAlg(// size of population
 
   //	This works like an advanced form of elitism by inserting NumCopies
   //  copies of the NBest most fittest genomes into a population vector
-  private def GrabNBest(NBest: Int, NumCopies: Int, vecPop: util.Vector[SGenome]) {
+  private def GrabNBest(NBest: Int, NumCopies: Int, vecPop: util.List[SGenome]) {
     //add the required amount of copies of the n most fittest
     //to the supplied vector
     for (j <- 0 until NBest) {
@@ -169,7 +169,7 @@ class CGenAlg(// size of population
   }
 
   //this runs the GA for one generation.
-  def Epoch(old_pop: util.Vector[SGenome]): util.Vector[SGenome] = {
+  def Epoch(old_pop: util.List[SGenome]): util.List[SGenome] = {
     //assign the given population to the classes population
     m_vecPop = old_pop
     //reset the appropriate variables
@@ -179,7 +179,7 @@ class CGenAlg(// size of population
     //calculate best, worst, average and total fitness
     CalculateBestWorstAvTot()
     //create a temporary vector to store new chromosones
-    val vecNewPop: util.Vector[SGenome] = new util.Vector[SGenome]
+    val vecNewPop: util.List[SGenome] = new util.ArrayList[SGenome]
     //Now to add a little elitism we shall add in some copies of the
     //fittest genomes. Make sure we add an EVEN number or the roulette
     //wheel sampling will crash
@@ -191,8 +191,8 @@ class CGenAlg(// size of population
       val mum: SGenome = GetChromoRoulette
       val dad: SGenome = GetChromoRoulette
       //create some offspring via crossover
-      val baby1: util.Vector[Double] = new util.Vector[Double]
-      val baby2: util.Vector[Double] = new util.Vector[Double]
+      val baby1: util.List[Double] = new util.ArrayList[Double]
+      val baby2: util.List[Double] = new util.ArrayList[Double]
       Crossover(mum.vecWeights, dad.vecWeights, baby1, baby2)
       //now we mutate
       Mutate(baby1)
@@ -206,7 +206,7 @@ class CGenAlg(// size of population
     m_vecPop
   }
 
-  def GetChromos: util.Vector[SGenome] = m_vecPop
+  def GetChromos: util.List[SGenome] = m_vecPop
 
   def AverageFitness: Double = m_dTotalFitness / m_iPopSize
 
