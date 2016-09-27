@@ -2,37 +2,30 @@ package org.danielholmes.smartsweepers
 
 import java.awt.{Color, Graphics2D}
 import java.awt.geom.AffineTransform
-import java.util
 
 import org.danielholmes.smartsweepers.Utils.RandFloat
 import org.danielholmes.smartsweepers.ga.{CGenAlg, Genome}
 
-import scala.collection.JavaConverters._
-
 class CController() {
   private val cxClient: Int = CParams.WindowWidth
   private val cyClient: Int = CParams.WindowHeight
-  private val m_NumSweepers = CParams.iNumSweepers
   private var m_vecThePopulation: List[Genome] = _
-  private val m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
+  private val m_vecSweepers: List[MineSweeper] = List.fill(CParams.iNumSweepers) { new MineSweeper }
   private var m_vecMines: List[Vector2D] = List.fill(CParams.iNumMines) { Vector2D(RandFloat * cxClient, RandFloat * cyClient) }
   private var ga: CGenAlg = _
   private var totalWeightsInNN: Int = 0
-  private val averageFitness: util.List[Double] = new util.ArrayList[Double]
-  private val bestFitness: util.List[Double] = new util.ArrayList[Double]
+  private var averageFitness: List[Double] = List.empty
+  private var bestFitness: List[Double] = List.empty
   private var m_bFastRender: Boolean = false
   private var m_iTicks: Int = 0
   private var m_iGenerations: Int = 0
 
-  for (i <- 0 until m_NumSweepers) {
-    m_vecSweepers.add(new CMinesweeper)
-  }
-  totalWeightsInNN = m_vecSweepers.get(0).numberOfWeights
+  totalWeightsInNN = m_vecSweepers.head.numberOfWeights
 
-  ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, totalWeightsInNN)
+  ga = new CGenAlg(m_vecSweepers.size, CParams.dMutationRate, CParams.dCrossoverRate, totalWeightsInNN)
   m_vecThePopulation = ga.population
-  for (i <- 0 until m_NumSweepers) {
-    m_vecSweepers.get(i).putWeights(m_vecThePopulation(i).weights)
+  for (i <- m_vecThePopulation.indices) {
+    m_vecSweepers(i).putWeights(m_vecThePopulation(i).weights)
   }
 
   def FastRender: Boolean = m_bFastRender
@@ -45,11 +38,10 @@ class CController() {
     if ( {
       m_iTicks += 1; m_iTicks - 1
     } < CParams.iNumTicks) {
-      m_vecThePopulation = m_vecSweepers.asScala
-        .indices
+      m_vecThePopulation = m_vecSweepers.indices
         .map(i => {
           val g = m_vecThePopulation(i)
-          val s = m_vecSweepers.get(i)
+          val s = m_vecSweepers(i)
           if (!s.update(m_vecMines)) {
             throw new RuntimeException("Wrong amount of NN inputs!")
           }
@@ -68,16 +60,17 @@ class CController() {
     }
     else
     {
-      averageFitness.add(ga.averageFitness)
-      bestFitness.add(ga.bestFitness)
+      averageFitness = averageFitness :+ ga.averageFitness
+      bestFitness = bestFitness :+ ga.bestFitness
 
       m_iGenerations += 1
       m_iTicks = 0
       m_vecThePopulation = ga.epoch(m_vecThePopulation)
 
-      for (i <- 0 until m_NumSweepers) {
-        m_vecSweepers.get(i).putWeights(m_vecThePopulation(i).weights)
-        m_vecSweepers.get(i).reset()
+      for (i <- m_vecSweepers.indices) {
+        val s = m_vecSweepers(i)
+        s.putWeights(m_vecThePopulation(i).weights)
+        s.reset()
       }
     }
     true
@@ -94,10 +87,10 @@ class CController() {
         g.drawRect((mine.x - CParams.dMineScale).toInt, (mine.y - CParams.dMineScale).toInt, (CParams.dMineScale * 2).toInt, (CParams.dMineScale * 2).toInt)
       }
       //render the sweepers
-      for (i <- 0 until m_NumSweepers) {
+      for (i <- m_vecSweepers.indices) {
         if (i == CParams.iNumElite) g.setColor(Color.RED)
         else g.setColor(Color.BLACK)
-        val s: CMinesweeper = m_vecSweepers.get(i)
+        val s: MineSweeper = m_vecSweepers(i)
         val oldTransform: AffineTransform = g.getTransform
         g.rotate(s.rotation, s.position.x, s.position.y)
         // Body
@@ -123,10 +116,10 @@ class CController() {
     g.setColor(Color.BLACK)
     g.drawString("Best Fitness:      " + ga.bestFitness, 5, 30)
     g.drawString("Average Fitness:   " + ga.averageFitness, 5, 45)
-    g.drawString("Best Fitness Ever: " + bestFitness.asScala.reduceOption(_ max _).getOrElse(0), 5, 60)
+    g.drawString("Best Fitness Ever: " + bestFitness.reduceOption(_ max _).getOrElse(0), 5, 60)
 
     // Grid lines
-    if (bestFitness.asScala.nonEmpty) {
+    if (bestFitness.nonEmpty) {
       val vSlice = cyClient / ((ga.bestFitness + 1) * 2)
       val gridSlice = vSlice * 10
       val numLines = Math.floor(cyClient / gridSlice).toInt
@@ -141,13 +134,13 @@ class CController() {
     plotGraph(g, Color.BLUE, averageFitness)
   }
 
-  private def plotGraph(g: Graphics2D, color: Color, values: util.List[Double]) {
+  private def plotGraph(g: Graphics2D, color: Color, values: List[Double]) {
     val hSlice = cxClient / (m_iGenerations + 1)
     val vSlice = cyClient / ((ga.bestFitness + 1) * 2)
     g.setColor(color)
     for (i <- 1 until values.size) {
       val x = i * hSlice
-      g.drawLine(x.toInt, (cyClient - vSlice * values.get(i - 1)).toInt, x + hSlice, (cyClient - vSlice * values.get(i)).toInt)
+      g.drawLine(x.toInt, (cyClient - vSlice * values(i - 1)).toInt, x + hSlice, (cyClient - vSlice * values(i)).toInt)
     }
   }
 }

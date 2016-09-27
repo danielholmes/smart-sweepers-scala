@@ -1,11 +1,7 @@
 package org.danielholmes.smartsweepers.ga
 
-import java.util
-
 import org.danielholmes.smartsweepers.Utils.{RandFloat, RandInt}
 import org.danielholmes.smartsweepers.{CParams, Utils}
-
-import scala.collection.JavaConverters._
 
 class CGenAlg(
                var popSize: Int,
