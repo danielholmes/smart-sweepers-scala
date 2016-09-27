@@ -50,56 +50,35 @@ class CController() {
     if ( {
       m_iTicks += 1; m_iTicks - 1
     } < CParams.iNumTicks) {
-      var i: Int = 0
-      while (i < m_NumSweepers) {
-        {
-          //update the NN and position
-          if (!m_vecSweepers.get(i).update(m_vecMines)) {
-            //error in processing the neural net
-            //MessageBox(m_hwndMain, "Wrong amount of NN inputs!", "Error", MB_OK);
-            throw new RuntimeException("Wrong amount of NN inputs!")
-            //return false;
-          }
-          //see if it's found a mine
-          val GrabHit: Int = m_vecSweepers.get(i).CheckForMine(m_vecMines, CParams.dMineScale)
-          if (GrabHit >= 0) {
-            //we have discovered a mine so increase fitness
-            m_vecSweepers.get(i).incrementFitness()
-            //mine found so replace the mine with another at a random
-            //position
-            m_vecMines.set(GrabHit, Vector2D(RandFloat * cxClient, RandFloat * cyClient))
-          }
-          //update the chromos fitness score
-          m_vecThePopulation.get(i).dFitness = m_vecSweepers.get(i).fitness
+      for (i <- 0 until m_NumSweepers) {
+        if (!m_vecSweepers.get(i).update(m_vecMines)) {
+          //error in processing the neural net
+          //MessageBox(m_hwndMain, "Wrong amount of NN inputs!", "Error", MB_OK);
+          throw new RuntimeException("Wrong amount of NN inputs!")
+          //return false;
         }
-        {
-          i += 1; i
+
+        val GrabHit: Int = m_vecSweepers.get(i).CheckForMine(m_vecMines, CParams.dMineScale)
+        if (GrabHit >= 0) {
+          m_vecSweepers.get(i).incrementFitness()
+          m_vecMines.set(GrabHit, Vector2D(RandFloat * cxClient, RandFloat * cyClient))
         }
+
+        m_vecThePopulation.set(i, Genome(m_vecThePopulation.get(i).weights, m_vecSweepers.get(i).fitness))
       }
     }
-    else //Another generation has been completed.
-    //Time to run the GA and update the sweepers with their new NNs
+    else
     {
-      //update the stats to be used in our stat window
       averageFitness.add(ga.averageFitness)
       bestFitness.add(ga.bestFitness)
-      //increment the generation counter
+
       m_iGenerations += 1
-      //reset cycles
       m_iTicks = 0
-      //run the GA to create a new population
       m_vecThePopulation = ga.Epoch(m_vecThePopulation)
-      //insert the new (hopefully)improved brains back into the sweepers
-      //and reset their positions etc
-      var i: Int = 0
-      while (i < m_NumSweepers) {
-        {
-          m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights.asJava)
-          m_vecSweepers.get(i).reset()
-        }
-        {
-          i += 1; i
-        }
+
+      for (i <- 0 until m_NumSweepers) {
+        m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights.asJava)
+        m_vecSweepers.get(i).reset()
       }
     }
     true

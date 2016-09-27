@@ -15,20 +15,19 @@ class CGenAlg(
                var crossoverRate: Double,
                var chromosomeLength: Int
 ) {
-  private var m_dTotalFitness = 0.0
-  private var m_dBestFitness = 0.0
-  private var m_dWorstFitness = 99999999.0
-  private var m_dAverageFitness: Double = 0.0
-  private var m_vecPop: util.List[Genome] = new util.ArrayList[Genome]
-  private var m_iFittestGenome: Int = 0
-  private var m_cGeneration: Int = 0
+  private var totalFitness = 0.0
+  private var bestFitness = 0.0
+  private var worstFitness = 99999999.0
+  private var population: util.List[Genome] = new util.ArrayList[Genome]
+  private var fittestGenome: Int = 0
+  private var generation: Int = 0
 
   for (i <- 0 until popSize) {
     val weights = new util.ArrayList[Double]
     for (j <- 0 until chromosomeLength) {
       weights.add(Utils.RandomClamped)
     }
-    m_vecPop.add(new Genome(weights.asScala.toList, 0))
+    population.add(Genome(weights.asScala.toList, 0))
   }
 
   private def crossover(mum: List[Double], dad: List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
@@ -64,7 +63,7 @@ class CGenAlg(
 
   private def selectChromosomeByRoulette(): Genome = {
     //generate a random number between 0 & total fitness count
-    val Slice: Double = RandFloat * m_dTotalFitness
+    val Slice: Double = RandFloat * totalFitness
     //this will be set to the chosen chromosome
     var TheChosenOne: Genome = null
     //go through the chromosomes adding up the fitness so far
@@ -73,11 +72,11 @@ class CGenAlg(
     var done = false
     while (i < popSize && !done) {
       {
-        FitnessSoFar += m_vecPop.get(i).dFitness
+        FitnessSoFar += population.get(i).fitness
         //if the fitness so far > random number return the chromo at
         //this point
         if (FitnessSoFar >= Slice) {
-          TheChosenOne = m_vecPop.get(i)
+          TheChosenOne = population.get(i)
           done = true
         }
       }
@@ -97,7 +96,7 @@ class CGenAlg(
       var i: Int = 0
       while (i < NumCopies) {
         {
-          vecPop.add(m_vecPop.get((popSize - 1) - NBest))
+          vecPop.add(population.get((popSize - 1) - NBest))
         }
         {
           i += 1; i
@@ -109,50 +108,48 @@ class CGenAlg(
   //	calculates the fittest and weakest genome and the average/total
   //	fitness scores
   private def CalculateBestWorstAvTot() {
-    m_dTotalFitness = 0
+    totalFitness = 0
     var HighestSoFar: Double = 0
     var LowestSoFar: Double = 9999999
     var i: Int = 0
     while (i < popSize) {
       {
         //update fittest if necessary
-        if (m_vecPop.get(i).dFitness > HighestSoFar) {
-          HighestSoFar = m_vecPop.get(i).dFitness
-          m_iFittestGenome = i
-          m_dBestFitness = HighestSoFar
+        if (population.get(i).fitness > HighestSoFar) {
+          HighestSoFar = population.get(i).fitness
+          fittestGenome = i
+          bestFitness = HighestSoFar
         }
         //update worst if necessary
-        if (m_vecPop.get(i).dFitness < LowestSoFar) {
-          LowestSoFar = m_vecPop.get(i).dFitness
-          m_dWorstFitness = LowestSoFar
+        if (population.get(i).fitness < LowestSoFar) {
+          LowestSoFar = population.get(i).fitness
+          worstFitness = LowestSoFar
         }
-        m_dTotalFitness += m_vecPop.get(i).dFitness
+        totalFitness += population.get(i).fitness
       } //next chromo
       {
         i += 1; i
       }
     }
-    m_dAverageFitness = m_dTotalFitness / popSize
   }
 
   //	resets all the relevant variables ready for a new generation
   private def Reset() {
-    m_dTotalFitness = 0
-    m_dBestFitness = 0
-    m_dWorstFitness = 9999999
-    m_dAverageFitness = 0
+    totalFitness = 0
+    bestFitness = 0
+    worstFitness = 9999999
   }
 
   //this runs the GA for one generation.
   def Epoch(old_pop: util.List[Genome]): util.List[Genome] = {
     //assign the given population to the classes population
-    m_vecPop = old_pop
+    population = old_pop
     //reset the appropriate variables
     Reset()
-    //sort the population (for scaling and elitism)
-    Collections.sort(m_vecPop)
-    //calculate best, worst, average and total fitness
+
+    population = population.asScala.toList.sortBy(_.fitness).asJava
     CalculateBestWorstAvTot()
+
     //create a temporary vector to store new chromosones
     val vecNewPop: util.List[Genome] = new util.ArrayList[Genome]
     //Now to add a little elitism we shall add in some copies of the
@@ -173,17 +170,15 @@ class CGenAlg(
       val baby1Mutated = mutate(baby1)
       val baby2Mutated = mutate(baby2)
 
-      vecNewPop.add(new Genome(baby1Mutated, 0))
-      vecNewPop.add(new Genome(baby2Mutated, 0))
+      vecNewPop.add(Genome(baby1Mutated, 0))
+      vecNewPop.add(Genome(baby2Mutated, 0))
     }
     //finished so assign new pop back into m_vecPop
-    m_vecPop = vecNewPop
-    m_vecPop
+    population = vecNewPop
+    population
   }
 
-  def GetChromos: util.List[Genome] = m_vecPop
+  def GetChromos: util.List[Genome] = population
 
-  def averageFitness: Double = m_dTotalFitness / popSize
-
-  def bestFitness: Double = m_dBestFitness
+  def averageFitness: Double = totalFitness / popSize
 }
