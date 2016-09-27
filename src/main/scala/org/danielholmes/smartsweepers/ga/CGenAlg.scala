@@ -1,9 +1,10 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.ga
 
-import java.util.Collections
 import java.util
-import org.danielholmes.smartsweepers.Utils.RandFloat
-import org.danielholmes.smartsweepers.Utils.RandInt
+import java.util.Collections
+
+import org.danielholmes.smartsweepers.Utils.{RandFloat, RandInt}
+import org.danielholmes.smartsweepers.{CParams, Utils}
 
 class CGenAlg(// size of population
               var m_iPopSize: Int, //probability that a chromosomes bits will mutate.
@@ -21,7 +22,7 @@ class CGenAlg(// size of population
   //average fitness
   private var m_dAverageFitness: Double = .0
   //this holds the entire population of chromosomes
-  private var m_vecPop: util.List[SGenome] = new util.ArrayList[SGenome]
+  private var m_vecPop: util.List[Genome] = new util.ArrayList[Genome]
   //keeps track of the best genome
   private var m_iFittestGenome: Int = 0
   //generation counter
@@ -31,7 +32,7 @@ class CGenAlg(// size of population
   var i: Int = 0
   while (i < m_iPopSize) {
     {
-      m_vecPop.add(new SGenome)
+      m_vecPop.add(new Genome)
       var j: Int = 0
       while (j < m_iChromoLength) {
         {
@@ -87,11 +88,11 @@ class CGenAlg(// size of population
     }
   }
 
-  private def GetChromoRoulette: SGenome = {
+  private def GetChromoRoulette: Genome = {
     //generate a random number between 0 & total fitness count
     val Slice: Double = RandFloat * m_dTotalFitness
     //this will be set to the chosen chromosome
-    var TheChosenOne: SGenome = null
+    var TheChosenOne: Genome = null
     //go through the chromosomes adding up the fitness so far
     var FitnessSoFar: Double = 0
     var i: Int = 0
@@ -115,7 +116,7 @@ class CGenAlg(// size of population
 
   //	This works like an advanced form of elitism by inserting NumCopies
   //  copies of the NBest most fittest genomes into a population vector
-  private def GrabNBest(NBest: Int, NumCopies: Int, vecPop: util.List[SGenome]) {
+  private def GrabNBest(NBest: Int, NumCopies: Int, vecPop: util.List[Genome]) {
     //add the required amount of copies of the n most fittest
     //to the supplied vector
     for (j <- 0 until NBest) {
@@ -169,7 +170,7 @@ class CGenAlg(// size of population
   }
 
   //this runs the GA for one generation.
-  def Epoch(old_pop: util.List[SGenome]): util.List[SGenome] = {
+  def Epoch(old_pop: util.List[Genome]): util.List[Genome] = {
     //assign the given population to the classes population
     m_vecPop = old_pop
     //reset the appropriate variables
@@ -179,7 +180,7 @@ class CGenAlg(// size of population
     //calculate best, worst, average and total fitness
     CalculateBestWorstAvTot()
     //create a temporary vector to store new chromosones
-    val vecNewPop: util.List[SGenome] = new util.ArrayList[SGenome]
+    val vecNewPop: util.List[Genome] = new util.ArrayList[Genome]
     //Now to add a little elitism we shall add in some copies of the
     //fittest genomes. Make sure we add an EVEN number or the roulette
     //wheel sampling will crash
@@ -188,8 +189,8 @@ class CGenAlg(// size of population
     //repeat until a new population is generated
     while (vecNewPop.size < m_iPopSize) {
       //grab two chromosomes
-      val mum: SGenome = GetChromoRoulette
-      val dad: SGenome = GetChromoRoulette
+      val mum: Genome = GetChromoRoulette
+      val dad: Genome = GetChromoRoulette
       //create some offspring via crossover
       val baby1: util.List[Double] = new util.ArrayList[Double]
       val baby2: util.List[Double] = new util.ArrayList[Double]
@@ -198,17 +199,17 @@ class CGenAlg(// size of population
       Mutate(baby1)
       Mutate(baby2)
       //now copy into vecNewPop population
-      vecNewPop.add(new SGenome(baby1, 0))
-      vecNewPop.add(new SGenome(baby2, 0))
+      vecNewPop.add(new Genome(baby1, 0))
+      vecNewPop.add(new Genome(baby2, 0))
     }
     //finished so assign new pop back into m_vecPop
     m_vecPop = vecNewPop
     m_vecPop
   }
 
-  def GetChromos: util.List[SGenome] = m_vecPop
+  def GetChromos: util.List[Genome] = m_vecPop
 
-  def AverageFitness: Double = m_dTotalFitness / m_iPopSize
+  def averageFitness: Double = m_dTotalFitness / m_iPopSize
 
-  def BestFitness: Double = m_dBestFitness
+  def bestFitness: Double = m_dBestFitness
 }

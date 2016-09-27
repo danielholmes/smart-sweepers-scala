@@ -3,27 +3,27 @@ package org.danielholmes.smartsweepers
 import java.awt._
 import java.awt.geom.AffineTransform
 import java.util
-import org.danielholmes.smartsweepers.Utils.RandFloat
 
-//---------------------------------------constructor---------------------
-//
-//	initilaize the sweepers, their brains and the GA factory
-//-----------------------------------------------------------------------
+import org.danielholmes.smartsweepers.Utils.RandFloat
+import org.danielholmes.smartsweepers.ga.{CGenAlg, Genome}
+
+import scala.collection.JavaConverters._
+
 class CController() {
   //storage for the population of genomes
-  private var m_vecThePopulation: util.List[SGenome] = _
+  private var m_vecThePopulation: util.List[Genome] = _
   //and the minesweepers
   private var m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
   //and the mines
-  private var m_vecMines: util.List[SVector2D] = new util.ArrayList[SVector2D]
+  private var m_vecMines: util.List[Vector2D] = new util.ArrayList[Vector2D]
   //pointer to the GA
-  private var m_pGA: CGenAlg = _
+  private var ga: CGenAlg = _
   private var m_NumWeightsInNN: Int = 0
   //stores the average fitness per generation for use
   //in graphing.
-  private var m_vecAvFitness: util.List[Double] = new util.ArrayList[Double]
+  private var averageFitness: util.List[Double] = new util.ArrayList[Double]
   //stores the best fitness per generation
-  private var m_vecBestFitness: util.List[Double] = new util.ArrayList[Double]
+  private var bestFitness: util.List[Double] = new util.ArrayList[Double]
   //toggles the speed at which the simulation runs
   private var m_bFastRender: Boolean = false
   //cycles per generation
@@ -43,15 +43,15 @@ class CController() {
   //NN so we can initialise the GA
   m_NumWeightsInNN = m_vecSweepers.get(0).GetNumberOfWeights
   //initialize the Genetic Algorithm class
-  m_pGA = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, m_NumWeightsInNN)
+  ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, m_NumWeightsInNN)
   //Get the weights from the GA and insert into the sweepers brains
-  m_vecThePopulation = m_pGA.GetChromos
+  m_vecThePopulation = ga.GetChromos
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.get(i).PutWeights(m_vecThePopulation.get(i).vecWeights)
   }
   //initialize mines in random positions within the application window
   for (i <- 0 until m_NumMines) {
-    m_vecMines.add(new SVector2D(RandFloat * cxClient, RandFloat * cyClient))
+    m_vecMines.add(new Vector2D(RandFloat * cxClient, RandFloat * cyClient))
   }
 
   //accessor methods
@@ -80,7 +80,7 @@ class CController() {
       while (i < m_NumSweepers) {
         {
           //update the NN and position
-          if (!m_vecSweepers.get(i).Update(m_vecMines)) {
+          if (!m_vecSweepers.get(i).update(m_vecMines)) {
             //error in processing the neural net
             //MessageBox(m_hwndMain, "Wrong amount of NN inputs!", "Error", MB_OK);
             throw new RuntimeException("Wrong amount of NN inputs!")
@@ -93,7 +93,7 @@ class CController() {
             m_vecSweepers.get(i).IncrementFitness()
             //mine found so replace the mine with another at a random
             //position
-            m_vecMines.set(GrabHit, new SVector2D(RandFloat * cxClient, RandFloat * cyClient))
+            m_vecMines.set(GrabHit, new Vector2D(RandFloat * cxClient, RandFloat * cyClient))
           }
           //update the chromos fitness score
           m_vecThePopulation.get(i).dFitness = m_vecSweepers.get(i).Fitness
@@ -107,21 +107,21 @@ class CController() {
     //Time to run the GA and update the sweepers with their new NNs
     {
       //update the stats to be used in our stat window
-      m_vecAvFitness.add(m_pGA.AverageFitness)
-      m_vecBestFitness.add(m_pGA.BestFitness)
+      averageFitness.add(ga.averageFitness)
+      bestFitness.add(ga.bestFitness)
       //increment the generation counter
       m_iGenerations += 1
       //reset cycles
       m_iTicks = 0
       //run the GA to create a new population
-      m_vecThePopulation = m_pGA.Epoch(m_vecThePopulation)
+      m_vecThePopulation = ga.Epoch(m_vecThePopulation)
       //insert the new (hopefully)improved brains back into the sweepers
       //and reset their positions etc
       var i: Int = 0
       while (i < m_NumSweepers) {
         {
           m_vecSweepers.get(i).PutWeights(m_vecThePopulation.get(i).vecWeights)
-          m_vecSweepers.get(i).Reset()
+          m_vecSweepers.get(i).reset()
         }
         {
           i += 1; i
@@ -170,28 +170,32 @@ class CController() {
   //  graph showing best and average fitness
   private def PlotStats(g: Graphics2D) {
     g.setColor(Color.BLACK)
-    g.drawString("Best Fitness:    " + m_pGA.BestFitness, 5, 30)
-    g.drawString("Average Fitness: " + m_pGA.AverageFitness, 5, 45)
-    plotGraph(g, Color.RED, m_vecBestFitness)
-    plotGraph(g, Color.BLUE, m_vecAvFitness)
+    g.drawString("Best Fitness:    " + ga.bestFitness, 5, 30)
+    g.drawString("Average Fitness: " + ga.averageFitness, 5, 45)
+
+    // Grid lines
+    if (bestFitness.asScala.nonEmpty) {
+      val vSlice = cyClient / ((ga.bestFitness + 1) * 2)
+      val gridSlice = vSlice * 10
+      val numLines = Math.floor(cyClient / gridSlice).toInt
+      g.setColor(Color.GRAY)
+      for (y <- 0 until numLines) {
+        val lineY = (cyClient - y * gridSlice).toInt
+        g.drawLine(0, lineY, cxClient, lineY)
+      }
+    }
+
+    plotGraph(g, Color.RED, bestFitness)
+    plotGraph(g, Color.BLUE, averageFitness)
   }
 
   private def plotGraph(g: Graphics2D, color: Color, values: util.List[Double]) {
-    //render the graph
-    val HSlice: Double = cxClient.toFloat / (m_iGenerations + 1)
-    val VSlice: Double = cyClient.toFloat / ((m_pGA.BestFitness + 1) * 2)
-    //plot the graph for the best fitness
-    var x: Double = 0
+    val hSlice = cxClient / (m_iGenerations + 1)
+    val vSlice = cyClient / ((ga.bestFitness + 1) * 2)
     g.setColor(color)
-    var i: Int = 1
-    while (i < values.size) {
-      {
-        g.drawLine(x.toInt, (cyClient - VSlice * values.get(i - 1)).toInt, (x + HSlice).toInt, (cyClient - VSlice * values.get(i)).toInt)
-        x += HSlice
-      }
-      {
-        i += 1; i
-      }
+    for (i <- 1 until values.size) {
+      val x = i * hSlice
+      g.drawLine(x.toInt, (cyClient - vSlice * values.get(i - 1)).toInt, x + hSlice, (cyClient - vSlice * values.get(i)).toInt)
     }
   }
 }

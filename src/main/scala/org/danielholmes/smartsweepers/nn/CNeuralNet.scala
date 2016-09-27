@@ -40,7 +40,7 @@ class CNeuralNet() {
   /**
     * returns a vector containing the weights
     */
-  def GetWeights: util.List[Double] = {
+  def weights: util.List[Double] = {
     layers.asScala
       .flatMap(_.neurons)
       .flatMap(_.inputWeights)
