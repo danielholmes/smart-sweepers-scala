@@ -6,6 +6,8 @@ import java.util.Collections
 import org.danielholmes.smartsweepers.Utils.{RandFloat, RandInt}
 import org.danielholmes.smartsweepers.{CParams, Utils}
 
+import scala.collection.JavaConverters._
+
 class CGenAlg(
                var popSize: Int,
                //Try figures around 0.05 to 0.3 ish
@@ -21,31 +23,20 @@ class CGenAlg(
   private var m_iFittestGenome: Int = 0
   private var m_cGeneration: Int = 0
 
-  var i: Int = 0
-  while (i < popSize) {
-    {
-      m_vecPop.add(new Genome)
-      var j: Int = 0
-      while (j < chromosomeLength) {
-        {
-          m_vecPop.get(i).vecWeights.add(Utils.RandomClamped)
-        }
-        {
-          j += 1; j
-        }
-      }
+  for (i <- 0 until popSize) {
+    val weights = new util.ArrayList[Double]
+    for (j <- 0 until chromosomeLength) {
+      weights.add(Utils.RandomClamped)
     }
-    {
-      i += 1; i
-    }
+    m_vecPop.add(new Genome(weights.asScala.toList, 0))
   }
 
-  private def crossover(mum: util.List[Double], dad: util.List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
+  private def crossover(mum: List[Double], dad: List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
     //just return parents as offspring dependent on the rate
     //or if parents are the same
     if ((RandFloat > crossoverRate) || (mum eq dad)) {
-      baby1.addAll(mum)
-      baby2.addAll(dad)
+      baby1.addAll(mum.asJava)
+      baby2.addAll(dad.asJava)
       return
     }
     //determine a crossover point
@@ -53,29 +44,22 @@ class CGenAlg(
     //create the offspring
     var i: Int = 0
     for (i <- 0 until cp) {
-      baby1.add(mum.get(i))
-      baby2.add(dad.get(i))
+      baby1.add(mum(i))
+      baby2.add(dad(i))
     }
     for (i <- cp until mum.size) {
-      baby1.add(dad.get(i))
-      baby2.add(mum.get(i))
+      baby1.add(dad(i))
+      baby2.add(mum(i))
     }
   }
 
-  private def mutate(chromo: util.List[Double]) {
-    var i: Int = 0
-    while (i < chromo.size) {
-      {
-        //do we perturb this weight?
-        if (RandFloat < mutationRate) {
-          //add or subtract a small value to the weight
-          chromo.set(i, chromo.get(i) + (Utils.RandomClamped * CParams.dMaxPerturbation))
-        }
-      }
-      {
-        i += 1; i
+  private def mutate(chromo: util.List[Double]): List[Double] = {
+    for (i <- 0 until chromo.size) {
+      if (RandFloat < mutationRate) {
+        chromo.set(i, chromo.get(i) + (Utils.RandomClamped * CParams.dMaxPerturbation))
       }
     }
+    chromo.asScala.toList
   }
 
   private def selectChromosomeByRoulette(): Genome = {
@@ -184,13 +168,13 @@ class CGenAlg(
       //create some offspring via crossover
       val baby1: util.List[Double] = new util.ArrayList[Double]
       val baby2: util.List[Double] = new util.ArrayList[Double]
-      crossover(mum.vecWeights, dad.vecWeights, baby1, baby2)
-      //now we mutate
-      mutate(baby1)
-      mutate(baby2)
-      //now copy into vecNewPop population
-      vecNewPop.add(new Genome(baby1, 0))
-      vecNewPop.add(new Genome(baby2, 0))
+      crossover(mum.weights, dad.weights, baby1, baby2)
+
+      val baby1Mutated = mutate(baby1)
+      val baby2Mutated = mutate(baby2)
+
+      vecNewPop.add(new Genome(baby1Mutated, 0))
+      vecNewPop.add(new Genome(baby2Mutated, 0))
     }
     //finished so assign new pop back into m_vecPop
     m_vecPop = vecNewPop

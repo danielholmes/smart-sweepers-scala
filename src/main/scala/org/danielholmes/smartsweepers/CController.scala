@@ -33,7 +33,7 @@ class CController() {
   ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, totalWeightsInNN)
   m_vecThePopulation = ga.GetChromos
   for (i <- 0 until m_NumSweepers) {
-    m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).vecWeights)
+    m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights.asJava)
   }
 
   for (i <- 0 until m_NumMines) {
@@ -94,7 +94,7 @@ class CController() {
       var i: Int = 0
       while (i < m_NumSweepers) {
         {
-          m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).vecWeights)
+          m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights.asJava)
           m_vecSweepers.get(i).reset()
         }
         {
