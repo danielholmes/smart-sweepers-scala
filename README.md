@@ -21,6 +21,9 @@ An implementation of the the tutorial outlined here: (http://www.ai-junkie.com/a
 
 `sbt run`
 
+- Press F to toggle between viewing the current sweepers at real time and a sped up evolution only
+- Press R to reset
+
 
 ## Ideas
  

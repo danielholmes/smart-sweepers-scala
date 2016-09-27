@@ -4,8 +4,7 @@ import org.danielholmes.smartsweepers.Utils.Clamp
 import org.danielholmes.smartsweepers.Utils.RandFloat
 import org.danielholmes.smartsweepers.nn.NeuralNet
 
-class MineSweeper() {
-  private var brain: NeuralNet = new NeuralNet(CParams.iNumOutputs, CParams.iNeuronsPerHiddenLayer, CParams.iNumHidden, CParams.iNumInputs)
+class MineSweeper(private var brain: NeuralNet) {
   var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
   private var lookAt: Vector2D = Vector2D()
   var rotation: Double = RandFloat * CParams.dTwoPi
@@ -86,6 +85,4 @@ class MineSweeper() {
   def incrementFitness() = fitness += 1
 
   def putWeights(w: List[Double]) = brain = brain.replaceWeights(w)
-
-  def numberOfWeights: Int = brain.totalNumberOfWeights
 }

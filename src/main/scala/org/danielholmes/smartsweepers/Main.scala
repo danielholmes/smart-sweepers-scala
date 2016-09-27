@@ -14,12 +14,12 @@ import java.util.TimerTask
 object Main {
   private val szApplicationName: String = "Smart Sweepers v1.0"
   private val szWindowClassName: String = "sweeper"
-  //The controller class for this simulation
-  private var g_pController: CController = _
+
+  private var g_pController: Controller = _
 
   def main(args: Array[String]) {
     loadInConfigParameters()
-    g_pController = new CController
+    g_pController = new Controller
     val mainPanel: JPanel = new JPanel() {
       override def paint(g: Graphics) {
         super.paint(g)
@@ -39,8 +39,8 @@ object Main {
       }
 
       def keyPressed(e: KeyEvent) {
-        if (e.getKeyChar == 'f') g_pController.FastRenderToggle()
-        else if (e.getKeyChar == 'r') g_pController = new CController
+        if (e.getKeyChar == 'f') g_pController.fastRenderToggle()
+        else if (e.getKeyChar == 'r') g_pController = new Controller
         else if (e.getKeyCode == KeyEvent.VK_ESCAPE) System.exit(0)
       }
     })
@@ -54,7 +54,7 @@ object Main {
         // break //todo: break is not supported
       } else {
         mainPanel.repaint()
-        if (!g_pController.FastRender) {
+        if (!g_pController.fastRender) {
           val timeToNextFrameStart: Long = (frameStart + millisPerFrame) - System.currentTimeMillis
           if (timeToNextFrameStart > 0) {
             try {
@@ -69,13 +69,10 @@ object Main {
   }
 
   private def loadInConfigParameters() {
-    try
+    try {
       CParams.LoadInParameters(Paths.get(Thread.currentThread.getContextClassLoader.getResource("params.ini").toURI))
-
-    catch {
-      case e: URISyntaxException => {
-        throw new RuntimeException(e)
-      }
+    } catch {
+      case e: URISyntaxException => throw new RuntimeException(e)
     }
   }
 }

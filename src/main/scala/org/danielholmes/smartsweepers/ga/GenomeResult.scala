@@ -1,3 +1,3 @@
 package org.danielholmes.smartsweepers.ga
 
-case class GenomeResult(chromosome: Genome, fitness: Double)
+case class GenomeResult(genome: Genome, fitness: Double)

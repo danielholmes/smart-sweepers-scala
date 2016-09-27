@@ -19,7 +19,7 @@ class NeuralNet(val layers: List[NeuronLayer]) {
 
   private val numInputs = layers.head.numInputs
 
-  def weights(): List[Double] = layers.flatMap(_.neurons).flatMap(_.allWeights)
+  lazy val weights: List[Double] = layers.flatMap(_.neurons).flatMap(_.allWeights)
 
   def replaceWeights(weights: List[Double]): NeuralNet = {
     var cWeight: Int = 0
