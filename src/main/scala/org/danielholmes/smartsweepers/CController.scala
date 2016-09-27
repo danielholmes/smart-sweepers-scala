@@ -52,10 +52,7 @@ class CController() {
     } < CParams.iNumTicks) {
       for (i <- 0 until m_NumSweepers) {
         if (!m_vecSweepers.get(i).update(m_vecMines)) {
-          //error in processing the neural net
-          //MessageBox(m_hwndMain, "Wrong amount of NN inputs!", "Error", MB_OK);
           throw new RuntimeException("Wrong amount of NN inputs!")
-          //return false;
         }
 
         val GrabHit: Int = m_vecSweepers.get(i).CheckForMine(m_vecMines, CParams.dMineScale)
