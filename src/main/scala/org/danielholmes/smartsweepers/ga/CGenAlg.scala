@@ -124,7 +124,6 @@ class CGenAlg(
     }
   }
 
-  //	resets all the relevant variables ready for a new generation
   private def Reset() {
     totalFitness = 0
     bestFitness = 0

@@ -4,10 +4,10 @@ import java.util
 
 import org.danielholmes.smartsweepers.Utils.Clamp
 import org.danielholmes.smartsweepers.Utils.RandFloat
-import org.danielholmes.smartsweepers.nn.CNeuralNet
+import org.danielholmes.smartsweepers.nn.NeuralNet
 
 class CMinesweeper() {
-  private val brain: CNeuralNet = new CNeuralNet
+  private var brain: NeuralNet = new NeuralNet(CParams.iNumOutputs, CParams.iNeuronsPerHiddenLayer, CParams.iNumHidden, CParams.iNumInputs)
   var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
   private var lookAt: Vector2D = Vector2D()
   var rotation: Double = RandFloat * CParams.dTwoPi
@@ -87,7 +87,7 @@ class CMinesweeper() {
 
   def incrementFitness() = fitness += 1
 
-  def putWeights(w: util.List[Double]) = brain.putWeights(w)
+  def putWeights(w: List[Double]) = brain = brain.replaceWeights(w)
 
   def numberOfWeights: Int = brain.totalNumberOfWeights
 }

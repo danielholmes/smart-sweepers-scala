@@ -4,6 +4,8 @@ import org.danielholmes.smartsweepers.CParams
 import scala.util.Random
 
 case class Neuron(inputWeights: List[Double], biasWeight: Double) {
+  require(inputWeights.nonEmpty)
+
   val numInputs = inputWeights.size
   val numberOfWeights = numInputs + 1
 
