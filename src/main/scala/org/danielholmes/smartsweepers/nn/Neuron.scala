@@ -4,9 +4,12 @@ import org.danielholmes.smartsweepers.CParams
 import scala.util.Random
 
 case class Neuron(inputWeights: List[Double]) {
+  val numberOfWeights = inputWeights.size // + 1
   val numInputs = inputWeights.size
   // TODO: Remove from "regular" weights
   val biasWeight = inputWeights.last
+
+  lazy val allWeights = inputWeights
 
   def getActivation(inputs: List[Double]): Double = {
     require(inputs.size == inputWeights.size - 1, s"inputs ${inputs.size} should = ${inputWeights.size}")

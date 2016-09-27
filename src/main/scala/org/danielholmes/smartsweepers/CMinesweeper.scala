@@ -59,15 +59,14 @@ class CMinesweeper() {
   //	returns the vector from the sweeper to the closest mine
   private def GetClosestMine(mines: util.List[Vector2D]): Vector2D = {
     var closest_so_far: Double = 99999
-    var vClosestObject: Vector2D = Vector2D(0, 0)
-    //cycle through mines to find closest
+    var closestObject: Vector2D = Vector2D(0, 0)
     var i: Int = 0
     while (i < mines.size) {
       {
         val len_to_object: Double = (mines.get(i) - position).length
         if (len_to_object < closest_so_far) {
           closest_so_far = len_to_object
-          vClosestObject = position - mines.get(i)
+          closestObject = position - mines.get(i)
           closestMine = i
         }
       }
@@ -75,7 +74,7 @@ class CMinesweeper() {
         i += 1; i - 1
       }
     }
-    vClosestObject
+    closestObject
   }
 
   //  this function checks for collision with its closest mine (calculated
@@ -90,5 +89,5 @@ class CMinesweeper() {
 
   def putWeights(w: util.List[Double]) = brain.putWeights(w)
 
-  def numberOfWeights: Int = brain.numberOfWeights
+  def numberOfWeights: Int = brain.totalNumberOfWeights
 }

@@ -14,7 +14,7 @@ class CController() {
   private val m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
   private val m_vecMines: util.List[Vector2D] = new util.ArrayList[Vector2D]
   private var ga: CGenAlg = _
-  private var m_NumWeightsInNN: Int = 0
+  private var totalWeightsInNN: Int = 0
   private val averageFitness: util.List[Double] = new util.ArrayList[Double]
   private val bestFitness: util.List[Double] = new util.ArrayList[Double]
   private var m_bFastRender: Boolean = false
@@ -28,9 +28,9 @@ class CController() {
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.add(new CMinesweeper)
   }
-  m_NumWeightsInNN = m_vecSweepers.get(0).numberOfWeights
+  totalWeightsInNN = m_vecSweepers.get(0).numberOfWeights
 
-  ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, m_NumWeightsInNN)
+  ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, totalWeightsInNN)
   m_vecThePopulation = ga.GetChromos
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).vecWeights)

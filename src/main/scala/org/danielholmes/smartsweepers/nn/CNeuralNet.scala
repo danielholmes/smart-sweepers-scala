@@ -40,7 +40,7 @@ class CNeuralNet() {
   def weights: util.List[Double] = {
     layers.asScala
       .flatMap(_.neurons)
-      .flatMap(_.inputWeights)
+      .flatMap(_.allWeights)
       .asJava
   }
 
@@ -61,7 +61,7 @@ class CNeuralNet() {
     }
   }
 
-  def numberOfWeights: Int = layers.asScala.flatMap(_.neurons).map(_.numInputs).sum
+  def totalNumberOfWeights: Int = layers.asScala.flatMap(_.neurons).map(_.numberOfWeights).sum
 
   def update(firstInputs: List[Double]): List[Double] = {
     //first check that we have the correct amount of inputs

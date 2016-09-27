@@ -6,35 +6,27 @@ import java.util.Collections
 import org.danielholmes.smartsweepers.Utils.{RandFloat, RandInt}
 import org.danielholmes.smartsweepers.{CParams, Utils}
 
-class CGenAlg(// size of population
-              var m_iPopSize: Int, //probability that a chromosomes bits will mutate.
-              //Try figures around 0.05 to 0.3 ish
-              var m_dMutationRate: Double, //probability of chromosomes crossing over bits
-              //0.7 is pretty good
-              var m_dCrossoverRate: Double, //amount of weights per chromo
-              var m_iChromoLength: Int) {
-  //total fitness of population
+class CGenAlg(
+               var popSize: Int,
+               //Try figures around 0.05 to 0.3 ish
+               var mutationRate: Double,
+               var crossoverRate: Double,
+               var chromosomeLength: Int
+) {
   private var m_dTotalFitness = 0.0
-  //best fitness this population
   private var m_dBestFitness = 0.0
-  //worst
   private var m_dWorstFitness = 99999999.0
-  //average fitness
-  private var m_dAverageFitness: Double = .0
-  //this holds the entire population of chromosomes
+  private var m_dAverageFitness: Double = 0.0
   private var m_vecPop: util.List[Genome] = new util.ArrayList[Genome]
-  //keeps track of the best genome
   private var m_iFittestGenome: Int = 0
-  //generation counter
   private var m_cGeneration: Int = 0
-  //initialise population with chromosomes consisting of random
-  //weights and all fitnesses set to zero
+
   var i: Int = 0
-  while (i < m_iPopSize) {
+  while (i < popSize) {
     {
       m_vecPop.add(new Genome)
       var j: Int = 0
-      while (j < m_iChromoLength) {
+      while (j < chromosomeLength) {
         {
           m_vecPop.get(i).vecWeights.add(Utils.RandomClamped)
         }
@@ -48,16 +40,16 @@ class CGenAlg(// size of population
     }
   }
 
-  private def Crossover(mum: util.List[Double], dad: util.List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
+  private def crossover(mum: util.List[Double], dad: util.List[Double], baby1: util.List[Double], baby2: util.List[Double]) {
     //just return parents as offspring dependent on the rate
     //or if parents are the same
-    if ((RandFloat > m_dCrossoverRate) || (mum eq dad)) {
+    if ((RandFloat > crossoverRate) || (mum eq dad)) {
       baby1.addAll(mum)
       baby2.addAll(dad)
       return
     }
     //determine a crossover point
-    val cp: Int = RandInt(0, m_iChromoLength - 1)
+    val cp: Int = RandInt(0, chromosomeLength - 1)
     //create the offspring
     var i: Int = 0
     for (i <- 0 until cp) {
@@ -70,14 +62,12 @@ class CGenAlg(// size of population
     }
   }
 
-  private def Mutate(chromo: util.List[Double]) {
-    //traverse the chromosome and mutate each weight dependent
-    //on the mutation rate
+  private def mutate(chromo: util.List[Double]) {
     var i: Int = 0
     while (i < chromo.size) {
       {
         //do we perturb this weight?
-        if (RandFloat < m_dMutationRate) {
+        if (RandFloat < mutationRate) {
           //add or subtract a small value to the weight
           chromo.set(i, chromo.get(i) + (Utils.RandomClamped * CParams.dMaxPerturbation))
         }
@@ -88,7 +78,7 @@ class CGenAlg(// size of population
     }
   }
 
-  private def GetChromoRoulette: Genome = {
+  private def selectChromosomeByRoulette(): Genome = {
     //generate a random number between 0 & total fitness count
     val Slice: Double = RandFloat * m_dTotalFitness
     //this will be set to the chosen chromosome
@@ -97,7 +87,7 @@ class CGenAlg(// size of population
     var FitnessSoFar: Double = 0
     var i: Int = 0
     var done = false
-    while (i < m_iPopSize && !done) {
+    while (i < popSize && !done) {
       {
         FitnessSoFar += m_vecPop.get(i).dFitness
         //if the fitness so far > random number return the chromo at
@@ -123,7 +113,7 @@ class CGenAlg(// size of population
       var i: Int = 0
       while (i < NumCopies) {
         {
-          vecPop.add(m_vecPop.get((m_iPopSize - 1) - NBest))
+          vecPop.add(m_vecPop.get((popSize - 1) - NBest))
         }
         {
           i += 1; i
@@ -139,7 +129,7 @@ class CGenAlg(// size of population
     var HighestSoFar: Double = 0
     var LowestSoFar: Double = 9999999
     var i: Int = 0
-    while (i < m_iPopSize) {
+    while (i < popSize) {
       {
         //update fittest if necessary
         if (m_vecPop.get(i).dFitness > HighestSoFar) {
@@ -158,7 +148,7 @@ class CGenAlg(// size of population
         i += 1; i
       }
     }
-    m_dAverageFitness = m_dTotalFitness / m_iPopSize
+    m_dAverageFitness = m_dTotalFitness / popSize
   }
 
   //	resets all the relevant variables ready for a new generation
@@ -187,17 +177,17 @@ class CGenAlg(// size of population
     if ((CParams.iNumCopiesElite * CParams.iNumElite % 2) == 0) GrabNBest(CParams.iNumElite, CParams.iNumCopiesElite, vecNewPop)
     //now we enter the GA loop
     //repeat until a new population is generated
-    while (vecNewPop.size < m_iPopSize) {
+    while (vecNewPop.size < popSize) {
       //grab two chromosomes
-      val mum: Genome = GetChromoRoulette
-      val dad: Genome = GetChromoRoulette
+      val mum: Genome = selectChromosomeByRoulette()
+      val dad: Genome = selectChromosomeByRoulette()
       //create some offspring via crossover
       val baby1: util.List[Double] = new util.ArrayList[Double]
       val baby2: util.List[Double] = new util.ArrayList[Double]
-      Crossover(mum.vecWeights, dad.vecWeights, baby1, baby2)
+      crossover(mum.vecWeights, dad.vecWeights, baby1, baby2)
       //now we mutate
-      Mutate(baby1)
-      Mutate(baby2)
+      mutate(baby1)
+      mutate(baby2)
       //now copy into vecNewPop population
       vecNewPop.add(new Genome(baby1, 0))
       vecNewPop.add(new Genome(baby2, 0))
@@ -209,7 +199,7 @@ class CGenAlg(// size of population
 
   def GetChromos: util.List[Genome] = m_vecPop
 
-  def averageFitness: Double = m_dTotalFitness / m_iPopSize
+  def averageFitness: Double = m_dTotalFitness / popSize
 
   def bestFitness: Double = m_dBestFitness
 }
