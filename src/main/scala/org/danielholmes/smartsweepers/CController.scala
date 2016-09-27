@@ -28,12 +28,12 @@ class CController() {
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.add(new CMinesweeper)
   }
-  m_NumWeightsInNN = m_vecSweepers.get(0).GetNumberOfWeights
+  m_NumWeightsInNN = m_vecSweepers.get(0).numberOfWeights
 
   ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, m_NumWeightsInNN)
   m_vecThePopulation = ga.GetChromos
   for (i <- 0 until m_NumSweepers) {
-    m_vecSweepers.get(i).PutWeights(m_vecThePopulation.get(i).vecWeights)
+    m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).vecWeights)
   }
 
   for (i <- 0 until m_NumMines) {
@@ -64,13 +64,13 @@ class CController() {
           val GrabHit: Int = m_vecSweepers.get(i).CheckForMine(m_vecMines, CParams.dMineScale)
           if (GrabHit >= 0) {
             //we have discovered a mine so increase fitness
-            m_vecSweepers.get(i).IncrementFitness()
+            m_vecSweepers.get(i).incrementFitness()
             //mine found so replace the mine with another at a random
             //position
             m_vecMines.set(GrabHit, Vector2D(RandFloat * cxClient, RandFloat * cyClient))
           }
           //update the chromos fitness score
-          m_vecThePopulation.get(i).dFitness = m_vecSweepers.get(i).Fitness
+          m_vecThePopulation.get(i).dFitness = m_vecSweepers.get(i).fitness
         }
         {
           i += 1; i
@@ -94,7 +94,7 @@ class CController() {
       var i: Int = 0
       while (i < m_NumSweepers) {
         {
-          m_vecSweepers.get(i).PutWeights(m_vecThePopulation.get(i).vecWeights)
+          m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).vecWeights)
           m_vecSweepers.get(i).reset()
         }
         {
@@ -122,18 +122,18 @@ class CController() {
         else g.setColor(Color.BLACK)
         val s: CMinesweeper = m_vecSweepers.get(i)
         val oldTransform: AffineTransform = g.getTransform
-        g.rotate(s.Rotation, s.Position.x, s.Position.y)
+        g.rotate(s.rotation, s.position.x, s.position.y)
         // Body
-        g.drawRect((s.Position.x - CParams.iSweeperScale).toInt, (s.Position.y - CParams.iSweeperScale).toInt, CParams.iSweeperScale * 2, CParams.iSweeperScale * 2)
+        g.drawRect((s.position.x - CParams.iSweeperScale).toInt, (s.position.y - CParams.iSweeperScale).toInt, CParams.iSweeperScale * 2, CParams.iSweeperScale * 2)
         // Left Track
         val trackWidth: Int = CParams.iSweeperScale / 2
-        g.drawRect((s.Position.x - CParams.iSweeperScale).toInt, (s.Position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
+        g.drawRect((s.position.x - CParams.iSweeperScale).toInt, (s.position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
         // Right Track
-        g.drawRect((s.Position.x + CParams.iSweeperScale - trackWidth).toInt, (s.Position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
+        g.drawRect((s.position.x + CParams.iSweeperScale - trackWidth).toInt, (s.position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
         // Nose
         val NOSE_SIZE: Int = CParams.iSweeperScale
-        g.drawLine((s.Position.x - CParams.iSweeperScale).toInt, (s.Position.y + CParams.iSweeperScale).toInt, s.Position.x.toInt, (s.Position.y + CParams.iSweeperScale + NOSE_SIZE).toInt)
-        g.drawLine(s.Position.x.toInt, (s.Position.y + CParams.iSweeperScale + NOSE_SIZE).toInt, (s.Position.x + CParams.iSweeperScale).toInt, (s.Position.y + CParams.iSweeperScale).toInt)
+        g.drawLine((s.position.x - CParams.iSweeperScale).toInt, (s.position.y + CParams.iSweeperScale).toInt, s.position.x.toInt, (s.position.y + CParams.iSweeperScale + NOSE_SIZE).toInt)
+        g.drawLine(s.position.x.toInt, (s.position.y + CParams.iSweeperScale + NOSE_SIZE).toInt, (s.position.x + CParams.iSweeperScale).toInt, (s.position.y + CParams.iSweeperScale).toInt)
         g.setTransform(oldTransform)
       }
     } //end if

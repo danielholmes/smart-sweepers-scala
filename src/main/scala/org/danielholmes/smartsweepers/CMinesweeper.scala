@@ -8,13 +8,13 @@ import org.danielholmes.smartsweepers.nn.CNeuralNet
 
 class CMinesweeper() {
   private val brain: CNeuralNet = new CNeuralNet
-  private var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
+  var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
   private var lookAt: Vector2D = Vector2D()
-  private var rotation: Double = RandFloat * CParams.dTwoPi
+  var rotation: Double = RandFloat * CParams.dTwoPi
   private var speed: Double = 0.0
   private var leftTrack: Double = 0.16
   private var rightTrack: Double = 0.16
-  private var fitness: Double = 0.0
+  var fitness: Double = 0.0
   private var closestMine: Int = 0
 
   def reset() {
@@ -86,19 +86,9 @@ class CMinesweeper() {
     -1
   }
 
-  def Position: Vector2D = position
+  def incrementFitness() = fitness += 1
 
-  def IncrementFitness() {
-    fitness += 1
-  }
+  def putWeights(w: util.List[Double]) = brain.putWeights(w)
 
-  def Fitness: Double = fitness
-
-  def Rotation: Double = rotation
-
-  def PutWeights(w: util.List[Double]) {
-    brain.putWeights(w)
-  }
-
-  def GetNumberOfWeights: Int = brain.numberOfWeights
+  def numberOfWeights: Int = brain.numberOfWeights
 }

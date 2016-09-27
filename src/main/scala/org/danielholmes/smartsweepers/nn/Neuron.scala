@@ -24,7 +24,9 @@ case class Neuron(inputWeights: List[Double]) {
 }
 
 object Neuron {
+  val randomiser = new Random
+
   def apply(numInputs: Int): Neuron = {
-    Neuron(List.fill(numInputs + 1) { new Random().nextDouble - new Random().nextDouble })
+    Neuron(List.fill(numInputs + 1) { randomiser.nextDouble - randomiser.nextDouble })
   }
 }
