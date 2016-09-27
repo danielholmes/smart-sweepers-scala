@@ -5,12 +5,12 @@ import scala.annotation.tailrec
 class NeuralNet(val layers: List[NeuronLayer]) {
   require(layers.nonEmpty)
 
-  def this(numOutputs: Int, neuronsPerHiddenLyr: Int, numHiddenLayers: Int, numInputs: Int) {
+  def this(numOutputs: Int, neuronsPerHiddenLayer: Int, numHiddenLayers: Int, numInputs: Int) {
     this({
       if (numHiddenLayers > 0) {
-        List(NeuronLayer(neuronsPerHiddenLyr, numInputs)) ++
-          List.fill(numHiddenLayers - 1) { NeuronLayer(neuronsPerHiddenLyr, neuronsPerHiddenLyr) } ++
-          List(NeuronLayer(numOutputs, neuronsPerHiddenLyr))
+        List(NeuronLayer(neuronsPerHiddenLayer, numInputs)) ++
+          List.fill(numHiddenLayers - 1) { NeuronLayer(neuronsPerHiddenLayer, neuronsPerHiddenLayer) } ++
+          List(NeuronLayer(numOutputs, neuronsPerHiddenLayer))
       } else {
         List(NeuronLayer(numOutputs, numInputs))
       }
@@ -18,6 +18,8 @@ class NeuralNet(val layers: List[NeuronLayer]) {
   }
 
   private val numInputs = layers.head.numInputs
+
+  def weights(): List[Double] = layers.flatMap(_.neurons).flatMap(_.allWeights)
 
   def replaceWeights(weights: List[Double]): NeuralNet = {
     var cWeight: Int = 0

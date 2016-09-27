@@ -39,6 +39,7 @@ object CParams {
           }
         }
       }
+      require((CParams.iNumCopiesElite * CParams.iNumElite % 2) == 0)
     }
     catch {
       case e: IOException => throw new RuntimeException("Error getting ini file", e)
@@ -55,8 +56,8 @@ object CParams {
   var iNumHidden: Int = 0
   var iNeuronsPerHiddenLayer: Int = 0
   var iNumOutputs: Int = 0
-  var dActivationResponse: Double = 0.0
-  var dBias: Double = 0.0
+  var dActivationResponse: Double = 1.0
+  var dBias: Double = -1.0
   var dMaxTurnRate: Double = 0.0
   var dMaxSpeed: Double = 0.0
   var iSweeperScale: Int = 0
@@ -65,6 +66,7 @@ object CParams {
   var iNumTicks: Int = 0
   var dMineScale: Double = 0.0
   var dCrossoverRate: Double = 0.0
+  //Try figures around 0.05 to 0.3 ish
   var dMutationRate: Double = 0.0
   var dMaxPerturbation: Double = 0.0
   var iNumElite: Int = 0
