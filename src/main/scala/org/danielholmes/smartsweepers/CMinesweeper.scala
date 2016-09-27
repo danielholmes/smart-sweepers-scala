@@ -8,8 +8,8 @@ import org.danielholmes.smartsweepers.nn.CNeuralNet
 
 class CMinesweeper() {
   private val brain: CNeuralNet = new CNeuralNet
-  private var position: Vector2D = new Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
-  private var lookAt: Vector2D = new Vector2D()
+  private var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
+  private var lookAt: Vector2D = Vector2D()
   private var rotation: Double = RandFloat * CParams.dTwoPi
   private var speed: Double = 0.0
   private var leftTrack: Double = 0.16
@@ -18,7 +18,7 @@ class CMinesweeper() {
   private var closestMine: Int = 0
 
   def reset() {
-    position = new Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
+    position = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
     fitness = 0
     rotation = RandFloat * CParams.dTwoPi
   }
@@ -45,21 +45,21 @@ class CMinesweeper() {
     rotation += RotForce
     speed = leftTrack + rightTrack
 
-    lookAt = new Vector2D(-Math.sin(rotation), Math.cos(rotation))
+    lookAt = Vector2D(-Math.sin(rotation), Math.cos(rotation))
 
     position = position + (lookAt * speed)
     //wrap around window limits
-    if (position.x > CParams.WindowWidth) position = new Vector2D(0, position.y)
-    if (position.x < 0) new Vector2D(CParams.WindowWidth, position.y)
-    if (position.y > CParams.WindowHeight) new Vector2D(position.x, 0)
-    if (position.y < 0) new Vector2D(position.x, CParams.WindowHeight)
+    if (position.x > CParams.WindowWidth) position = Vector2D(0, position.y)
+    if (position.x < 0) Vector2D(CParams.WindowWidth, position.y)
+    if (position.y > CParams.WindowHeight) Vector2D(position.x, 0)
+    if (position.y < 0) Vector2D(position.x, CParams.WindowHeight)
     true
   }
 
   //	returns the vector from the sweeper to the closest mine
   private def GetClosestMine(mines: util.List[Vector2D]): Vector2D = {
     var closest_so_far: Double = 99999
-    var vClosestObject: Vector2D = new Vector2D(0, 0)
+    var vClosestObject: Vector2D = Vector2D(0, 0)
     //cycle through mines to find closest
     var i: Int = 0
     while (i < mines.size) {

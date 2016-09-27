@@ -1,4 +1,4 @@
-name := "neural-network-minesweeper"
+name := "smart-sweepers-scala"
 
 version := "1.0"
 

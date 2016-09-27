@@ -37,7 +37,7 @@ class CController() {
   }
 
   for (i <- 0 until m_NumMines) {
-    m_vecMines.add(new Vector2D(RandFloat * cxClient, RandFloat * cyClient))
+    m_vecMines.add(Vector2D(RandFloat * cxClient, RandFloat * cyClient))
   }
 
   def FastRender: Boolean = m_bFastRender
@@ -67,7 +67,7 @@ class CController() {
             m_vecSweepers.get(i).IncrementFitness()
             //mine found so replace the mine with another at a random
             //position
-            m_vecMines.set(GrabHit, new Vector2D(RandFloat * cxClient, RandFloat * cyClient))
+            m_vecMines.set(GrabHit, Vector2D(RandFloat * cxClient, RandFloat * cyClient))
           }
           //update the chromos fitness score
           m_vecThePopulation.get(i).dFitness = m_vecSweepers.get(i).Fitness
@@ -154,7 +154,7 @@ class CController() {
       val gridSlice = vSlice * 10
       val numLines = Math.floor(cyClient / gridSlice).toInt
       g.setColor(Color.GRAY)
-      for (y <- 0 until numLines) {
+      for (y <- 1 to numLines) {
         val lineY = (cyClient - y * gridSlice).toInt
         g.drawLine(0, lineY, cxClient, lineY)
       }
