@@ -49,12 +49,13 @@ class CNeuralNet() {
     for (i <- 0 to numHiddenLayers) {
       val newNeurons = new util.ArrayList[Neuron]
       for (j <- 0 until layers.get(i).numNeurons) {
-        val newWeights = new util.ArrayList[Double]
+        val newInputWeights = new util.ArrayList[Double]
         for (k <- 0 until layers.get(i).neurons(j).numInputs) {
-          newWeights.add(weights.get(cWeight))
+          newInputWeights.add(weights.get(cWeight))
           cWeight += 1
         }
-        newNeurons.add(Neuron(newWeights.asScala.toList))
+        newNeurons.add(Neuron(newInputWeights.asScala.toList, weights.get(cWeight)))
+        cWeight += 1
       }
 
       layers.set(i, NeuronLayer(newNeurons.asScala.toList))

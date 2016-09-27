@@ -3,16 +3,14 @@ package org.danielholmes.smartsweepers.nn
 import org.danielholmes.smartsweepers.CParams
 import scala.util.Random
 
-case class Neuron(inputWeights: List[Double]) {
-  val numberOfWeights = inputWeights.size // + 1
+case class Neuron(inputWeights: List[Double], biasWeight: Double) {
   val numInputs = inputWeights.size
-  // TODO: Remove from "regular" weights
-  val biasWeight = inputWeights.last
+  val numberOfWeights = numInputs + 1
 
-  lazy val allWeights = inputWeights
+  lazy val allWeights = inputWeights :+ biasWeight
 
   def getActivation(inputs: List[Double]): Double = {
-    require(inputs.size == inputWeights.size - 1, s"inputs ${inputs.size} should = ${inputWeights.size}")
+    require(inputs.size == inputWeights.size, s"inputs ${inputs.size} should = ${inputWeights.size}")
     sigmoid(getNetInput(inputs), CParams.dActivationResponse)
   }
 
@@ -30,6 +28,8 @@ object Neuron {
   val randomiser = new Random
 
   def apply(numInputs: Int): Neuron = {
-    Neuron(List.fill(numInputs + 1) { randomiser.nextDouble - randomiser.nextDouble })
+    Neuron(List.fill(numInputs) { randomWeight() }, randomWeight())
   }
+
+  private def randomWeight(): Double = randomiser.nextDouble - randomiser.nextDouble
 }
