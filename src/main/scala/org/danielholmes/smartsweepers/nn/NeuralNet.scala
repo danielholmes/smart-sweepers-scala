@@ -2,20 +2,8 @@ package org.danielholmes.smartsweepers.nn
 
 import scala.annotation.tailrec
 
-class NeuralNet(val layers: List[NeuronLayer]) {
+class NeuralNet(val layers: List[NeuronLayer], neuronFactory: NeuronFactory) {
   require(layers.nonEmpty)
-
-  def this(numOutputs: Int, neuronsPerHiddenLayer: Int, numHiddenLayers: Int, numInputs: Int) {
-    this({
-      if (numHiddenLayers > 0) {
-        List(NeuronLayer(neuronsPerHiddenLayer, numInputs)) ++
-          List.fill(numHiddenLayers - 1) { NeuronLayer(neuronsPerHiddenLayer, neuronsPerHiddenLayer) } ++
-          List(NeuronLayer(numOutputs, neuronsPerHiddenLayer))
-      } else {
-        List(NeuronLayer(numOutputs, numInputs))
-      }
-    })
-  }
 
   private val numInputs = layers.head.numInputs
 
@@ -33,10 +21,11 @@ class NeuralNet(val layers: List[NeuronLayer]) {
               val biasWeight = weights(cWeight)
               cWeight += 1
 
-              Neuron(newInputWeights, biasWeight)
+              neuronFactory(newInputWeights, biasWeight)
             })
         )
-      })
+      }),
+      neuronFactory
     )
   }
 
@@ -54,5 +43,26 @@ class NeuralNet(val layers: List[NeuronLayer]) {
     }
 
     update(layers, inputs)
+  }
+}
+
+object NeuralNet {
+  def createRandom(neuronFactory: NeuronFactory, numOutputs: Int, neuronsPerHiddenLayer: Int, numHiddenLayers: Int, numInputs: Int): NeuralNet = {
+    new NeuralNet(
+      {
+        if (numHiddenLayers > 0) {
+          List(createRandomNeuronLayer(neuronFactory, neuronsPerHiddenLayer, numInputs)) ++
+            List.fill(numHiddenLayers - 1) { createRandomNeuronLayer(neuronFactory, neuronsPerHiddenLayer, neuronsPerHiddenLayer) } ++
+            List(createRandomNeuronLayer(neuronFactory, numOutputs, neuronsPerHiddenLayer))
+        } else {
+          List(createRandomNeuronLayer(neuronFactory, numOutputs, numInputs))
+        }
+      },
+      neuronFactory
+    )
+  }
+
+  private def createRandomNeuronLayer(neuronFactory: NeuronFactory, aNumNeurons: Int, aNumInputsPerNeuron: Int): NeuronLayer = {
+    NeuronLayer(List.fill(aNumNeurons) { neuronFactory(aNumInputsPerNeuron) })
   }
 }

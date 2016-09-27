@@ -1,15 +1,11 @@
 package org.danielholmes.smartsweepers
 
-import javafx.scene.input.KeyCode
 import javax.swing._
 import java.awt._
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.net.URISyntaxException
-import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Timer
-import java.util.TimerTask
 
 object Main {
   private val szApplicationName: String = "Smart Sweepers v1.0"

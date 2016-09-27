@@ -1,15 +1,16 @@
 package org.danielholmes.nnmine.nn
 
-import org.danielholmes.smartsweepers.nn.{NeuralNet, Neuron, NeuronLayer}
+import org.danielholmes.smartsweepers.nn.{NeuralNet, Neuron, NeuronFactory, NeuronLayer}
 import org.scalatest._
 
 class NeuralNetSpec extends FlatSpec with Matchers {
   "NeuralNet" should "throw argument error when updating with wrong number of inputs" in {
-    val n = new NeuralNet(
+    val n = NeuralNet.createRandom(
       numInputs=4,
       numOutputs=2,
       numHiddenLayers=1,
-      neuronsPerHiddenLayer=5
+      neuronsPerHiddenLayer=5,
+      neuronFactory=new NeuronFactory(10.0, 11.0)
     )
 
     an [IllegalArgumentException] should be thrownBy {
@@ -18,11 +19,12 @@ class NeuralNetSpec extends FlatSpec with Matchers {
   }
 
   it should "run update on small set correctly" in {
-    val n = new NeuralNet(
+    val n = NeuralNet.createRandom(
       numInputs=4,
       numOutputs=2,
       numHiddenLayers=1,
-      neuronsPerHiddenLayer=5
+      neuronsPerHiddenLayer=5,
+      neuronFactory=new NeuronFactory(10.0, 11.0)
     )
     val out = n.update(List(1, 2, 3, 4))
     out.size should be (2)
@@ -32,14 +34,15 @@ class NeuralNetSpec extends FlatSpec with Matchers {
     val n = new NeuralNet(
       layers=List(
         NeuronLayer(List(
-          Neuron(List(0.1, 0.2), 1.0),
-          Neuron(List(0.3, 0.4), 2.0)
+          Neuron(List(0.1, 0.2), 1.0, 10.0, 11.0),
+          Neuron(List(0.3, 0.4), 2.0, 10.0, 11.0)
         )),
         NeuronLayer(List(
-          Neuron(List(0.5, 0.6), 3.0),
-          Neuron(List(0.7, 0.8), 4.0)
+          Neuron(List(0.5, 0.6), 3.0, 10.0, 11.0),
+          Neuron(List(0.7, 0.8), 4.0, 10.0, 11.0)
         ))
-      )
+      ),
+      neuronFactory=new NeuronFactory(10.0, 11.0)
     )
     n.weights should be (List(
       0.1, 0.2, 1.0, 0.3, 0.4, 2.0,
@@ -51,14 +54,15 @@ class NeuralNetSpec extends FlatSpec with Matchers {
     val n = new NeuralNet(
       layers=List(
         NeuronLayer(List(
-          Neuron(List(0.1, 0.2), 1.0),
-          Neuron(List(0.3, 0.4), 2.0)
+          Neuron(List(0.1, 0.2), 1.0, 10.0, 11.0),
+          Neuron(List(0.3, 0.4), 2.0, 10.0, 11.0)
         )),
         NeuronLayer(List(
-          Neuron(List(0.5, 0.6), 3.0),
-          Neuron(List(0.7, 0.8), 4.0)
+          Neuron(List(0.5, 0.6), 3.0, 10.0, 11.0),
+          Neuron(List(0.7, 0.8), 4.0, 10.0, 11.0)
         ))
-      )
+      ),
+      neuronFactory=new NeuronFactory(10.0, 11.0)
     )
     val n2 = n.replaceWeights(List(
       1.1, 1.2, 2.0, 2.3, 2.4, 3.0,
@@ -71,11 +75,12 @@ class NeuralNetSpec extends FlatSpec with Matchers {
   }
 
   it should "construct the nn correctly" in {
-    val n = new NeuralNet(
+    val n = NeuralNet.createRandom(
       numInputs = 4,
       numOutputs = 2,
       numHiddenLayers = 1,
-      neuronsPerHiddenLayer = 6
+      neuronsPerHiddenLayer = 6,
+      neuronFactory=new NeuronFactory(10.0, 11.0)
     )
     n.layers.size should be (2) // input/hidden + output
     n.layers(0).neurons.size should be (6)

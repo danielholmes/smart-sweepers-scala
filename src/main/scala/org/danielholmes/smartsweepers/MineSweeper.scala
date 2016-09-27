@@ -30,14 +30,12 @@ class MineSweeper(private var brain: NeuralNet) {
       lookAt.y
     )
     val output = brain.update(inputs)
-    //make sure there were no errors in calculating the output
-    assert(output.size == CParams.iNumOutputs, output.size + " outputs doesn't equal expected " + CParams.iNumOutputs)
-    //assign the outputs to the sweepers left & right tracks
+    assert(output.size == 2, output.size + " outputs doesn't equal expected 2")
+
     leftTrack = output(0)
     rightTrack = output(1)
-    //calculate steering forces
+
     var RotForce: Double = leftTrack - rightTrack
-    //clamp rotation
     RotForce = Clamp(RotForce, -CParams.dMaxTurnRate, CParams.dMaxTurnRate)
     rotation += RotForce
     speed = leftTrack + rightTrack
@@ -45,7 +43,7 @@ class MineSweeper(private var brain: NeuralNet) {
     lookAt = Vector2D(-Math.sin(rotation), Math.cos(rotation))
 
     position = position + (lookAt * speed)
-    //wrap around window limits
+
     if (position.x > CParams.WindowWidth) position = Vector2D(0, position.y)
     if (position.x < 0) Vector2D(CParams.WindowWidth, position.y)
     if (position.y > CParams.WindowHeight) Vector2D(position.x, 0)
@@ -53,7 +51,6 @@ class MineSweeper(private var brain: NeuralNet) {
     true
   }
 
-  //	returns the vector from the sweeper to the closest mine
   private def GetClosestMine(mines: List[Vector2D]): Vector2D = {
     var closest_so_far: Double = 99999
     var closestObject: Vector2D = Vector2D(0, 0)
@@ -74,8 +71,6 @@ class MineSweeper(private var brain: NeuralNet) {
     closestObject
   }
 
-  //  this function checks for collision with its closest mine (calculated
-  //  earlier and stored in m_iClosestMine)
   def CheckForMine(mines: List[Vector2D], size: Double): Int = {
     val DistToObject: Vector2D = position - mines(closestMine)
     if (DistToObject.length < (size + 5)) return closestMine

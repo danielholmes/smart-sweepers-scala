@@ -5,14 +5,20 @@ import java.awt.geom.AffineTransform
 
 import org.danielholmes.smartsweepers.Utils.RandFloat
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
-import org.danielholmes.smartsweepers.nn.NeuralNet
+import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
 
 class Controller() {
   private val cxClient = CParams.WindowWidth
   private val cyClient = CParams.WindowHeight
 
   private val brains: List[NeuralNet] = List.fill(CParams.iNumSweepers) {
-    new NeuralNet(CParams.iNumOutputs, CParams.iNeuronsPerHiddenLayer, CParams.iNumHidden, CParams.iNumInputs)
+    NeuralNet.createRandom(
+      numOutputs = CParams.iNumOutputs,
+      neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
+      numHiddenLayers = CParams.iNumHidden,
+      numInputs = CParams.iNumInputs,
+      neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
+    )
   }
   private var m_vecThePopulation: List[Genome] = brains.map(b => Genome(b.weights, 0))
   private val m_vecSweepers: List[MineSweeper] = brains.map(new MineSweeper(_))

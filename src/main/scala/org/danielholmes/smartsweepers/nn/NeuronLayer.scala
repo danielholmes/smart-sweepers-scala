@@ -8,9 +8,3 @@ case class NeuronLayer(neurons: List[Neuron]) {
 
   def getOutputs(inputs: List[Double]): List[Double] = neurons.map(_.getActivation(inputs))
 }
-
-object NeuronLayer {
-  def apply(aNumNeurons: Int, aNumInputsPerNeuron: Int): NeuronLayer = {
-    NeuronLayer(List.fill(aNumNeurons) { Neuron(aNumInputsPerNeuron) })
-  }
-}
