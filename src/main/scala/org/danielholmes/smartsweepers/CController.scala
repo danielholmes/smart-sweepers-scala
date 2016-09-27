@@ -1,6 +1,6 @@
 package org.danielholmes.smartsweepers
 
-import java.awt._
+import java.awt.{Color, Graphics2D}
 import java.awt.geom.AffineTransform
 import java.util
 
@@ -10,9 +10,12 @@ import org.danielholmes.smartsweepers.ga.{CGenAlg, Genome}
 import scala.collection.JavaConverters._
 
 class CController() {
-  private var m_vecThePopulation: util.List[Genome] = _
+  private val cxClient: Int = CParams.WindowWidth
+  private val cyClient: Int = CParams.WindowHeight
+  private val m_NumSweepers = CParams.iNumSweepers
+  private var m_vecThePopulation: List[Genome] = _
   private val m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
-  private val m_vecMines: util.List[Vector2D] = new util.ArrayList[Vector2D]
+  private var m_vecMines: List[Vector2D] = List.fill(CParams.iNumMines) { Vector2D(RandFloat * cxClient, RandFloat * cyClient) }
   private var ga: CGenAlg = _
   private var totalWeightsInNN: Int = 0
   private val averageFitness: util.List[Double] = new util.ArrayList[Double]
@@ -20,10 +23,6 @@ class CController() {
   private var m_bFastRender: Boolean = false
   private var m_iTicks: Int = 0
   private var m_iGenerations: Int = 0
-  private val cxClient: Int = CParams.WindowWidth
-  private val cyClient: Int = CParams.WindowHeight
-  private val m_NumSweepers = CParams.iNumSweepers
-  private val m_NumMines = CParams.iNumMines
 
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.add(new CMinesweeper)
@@ -31,13 +30,9 @@ class CController() {
   totalWeightsInNN = m_vecSweepers.get(0).numberOfWeights
 
   ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, totalWeightsInNN)
-  m_vecThePopulation = ga.GetChromos
+  m_vecThePopulation = ga.population
   for (i <- 0 until m_NumSweepers) {
-    m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights)
-  }
-
-  for (i <- 0 until m_NumMines) {
-    m_vecMines.add(Vector2D(RandFloat * cxClient, RandFloat * cyClient))
+    m_vecSweepers.get(i).putWeights(m_vecThePopulation(i).weights)
   }
 
   def FastRender: Boolean = m_bFastRender
@@ -50,19 +45,26 @@ class CController() {
     if ( {
       m_iTicks += 1; m_iTicks - 1
     } < CParams.iNumTicks) {
-      for (i <- 0 until m_NumSweepers) {
-        if (!m_vecSweepers.get(i).update(m_vecMines)) {
-          throw new RuntimeException("Wrong amount of NN inputs!")
-        }
+      m_vecThePopulation = m_vecSweepers.asScala
+        .indices
+        .map(i => {
+          val g = m_vecThePopulation(i)
+          val s = m_vecSweepers.get(i)
+          if (!s.update(m_vecMines)) {
+            throw new RuntimeException("Wrong amount of NN inputs!")
+          }
 
-        val GrabHit: Int = m_vecSweepers.get(i).CheckForMine(m_vecMines, CParams.dMineScale)
-        if (GrabHit >= 0) {
-          m_vecSweepers.get(i).incrementFitness()
-          m_vecMines.set(GrabHit, Vector2D(RandFloat * cxClient, RandFloat * cyClient))
-        }
+          val GrabHit: Int = s.CheckForMine(m_vecMines, CParams.dMineScale)
+          if (GrabHit >= 0) {
+            s.incrementFitness()
+            m_vecMines = m_vecMines.slice(0, GrabHit) ++
+              List(Vector2D(RandFloat * cxClient, RandFloat * cyClient)) ++
+              m_vecMines.slice(GrabHit + 1, m_vecMines.size)
+          }
 
-        m_vecThePopulation.set(i, Genome(m_vecThePopulation.get(i).weights, m_vecSweepers.get(i).fitness))
-      }
+          Genome(g.weights, s.fitness)
+        })
+        .toList
     }
     else
     {
@@ -71,26 +73,25 @@ class CController() {
 
       m_iGenerations += 1
       m_iTicks = 0
-      m_vecThePopulation = ga.Epoch(m_vecThePopulation)
+      m_vecThePopulation = ga.epoch(m_vecThePopulation)
 
       for (i <- 0 until m_NumSweepers) {
-        m_vecSweepers.get(i).putWeights(m_vecThePopulation.get(i).weights)
+        m_vecSweepers.get(i).putWeights(m_vecThePopulation(i).weights)
         m_vecSweepers.get(i).reset()
       }
     }
     true
   }
 
-  def Render(g: Graphics2D) {
+  def render(g: Graphics2D) {
     g.setColor(Color.BLACK)
     g.drawString("Generation: " + m_iGenerations, 5, 15)
     //do not render if running at accelerated speed
     if (!m_bFastRender) {
       //render the mines
-      for (i <- 0 until m_NumMines) {
-        m_vecMines.get(i)
+      for (mine <- m_vecMines) {
         g.setColor(Color.GREEN)
-        g.drawRect((m_vecMines.get(i).x - CParams.dMineScale).toInt, (m_vecMines.get(i).y - CParams.dMineScale).toInt, (CParams.dMineScale * 2).toInt, (CParams.dMineScale * 2).toInt)
+        g.drawRect((mine.x - CParams.dMineScale).toInt, (mine.y - CParams.dMineScale).toInt, (CParams.dMineScale * 2).toInt, (CParams.dMineScale * 2).toInt)
       }
       //render the sweepers
       for (i <- 0 until m_NumSweepers) {

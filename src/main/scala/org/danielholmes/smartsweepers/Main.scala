@@ -23,7 +23,7 @@ object Main {
     val mainPanel: JPanel = new JPanel() {
       override def paint(g: Graphics) {
         super.paint(g)
-        g_pController.Render(g.asInstanceOf[Graphics2D])
+        g_pController.render(g.asInstanceOf[Graphics2D])
       }
     }
     mainPanel.setSize(CParams.WindowWidth, CParams.WindowHeight)

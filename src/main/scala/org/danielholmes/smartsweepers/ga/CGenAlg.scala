@@ -5,7 +5,6 @@ import java.util
 import org.danielholmes.smartsweepers.Utils.{RandFloat, RandInt}
 import org.danielholmes.smartsweepers.{CParams, Utils}
 
-import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 class CGenAlg(
@@ -15,20 +14,15 @@ class CGenAlg(
                var crossoverRate: Double,
                var chromosomeLength: Int
 ) {
+  require(crossoverRate >= 0 && crossoverRate <= 1)
+  require(mutationRate >= 0 && mutationRate <= 1)
+
   private var totalFitness = 0.0
   var bestFitness = 0.0
   private var worstFitness = 99999999.0
-  private var population: util.List[Genome] = new util.ArrayList[Genome]
+  var population = List.fill(popSize) { Genome(List.fill(chromosomeLength) { Utils.RandomClamped }, 0) }
   private var fittestGenome: Int = 0
   private var generation: Int = 0
-
-  for (i <- 0 until popSize) {
-    val weights = new util.ArrayList[Double]
-    for (j <- 0 until chromosomeLength) {
-      weights.add(Utils.RandomClamped)
-    }
-    population.add(Genome(weights.asScala.toList, 0))
-  }
 
   private def crossover(mum: List[Double], dad: List[Double]): (List[Double], List[Double]) = {
     if (RandFloat > crossoverRate || mum == dad) {
@@ -36,6 +30,7 @@ class CGenAlg(
     }
 
     val crossoverPoint: Int = RandInt(0, chromosomeLength - 1)
+
     (
       mum.slice(0, crossoverPoint) ++ dad.slice(crossoverPoint, dad.size),
       dad.slice(0, crossoverPoint) ++ mum.slice(crossoverPoint, mum.size)
@@ -63,11 +58,11 @@ class CGenAlg(
     var done = false
     while (i < popSize && !done) {
       {
-        FitnessSoFar += population.get(i).fitness
+        FitnessSoFar += population(i).fitness
         //if the fitness so far > random number return the chromo at
         //this point
         if (FitnessSoFar >= Slice) {
-          TheChosenOne = population.get(i)
+          TheChosenOne = population(i)
           done = true
         }
       }
@@ -78,75 +73,52 @@ class CGenAlg(
     TheChosenOne
   }
 
-  //	This works like an advanced form of elitism by inserting NumCopies
-  //  copies of the NBest most fittest genomes into a population vector
-  private def GrabNBest(NBest: Int, NumCopies: Int, vecPop: util.List[Genome]) {
-    //add the required amount of copies of the n most fittest
-    //to the supplied vector
-    for (j <- 0 until NBest) {
-      var i: Int = 0
-      while (i < NumCopies) {
-        {
-          vecPop.add(population.get((popSize - 1) - NBest))
-        }
-        {
-          i += 1; i
-        }
-      }
-    }
+  private def applyEugenics(amount: Int, copies: Int): List[Genome] = {
+    require(copies >= 0)
+    require(amount >= 0)
+    val best = population.slice(popSize - amount, popSize)
+    List.fill(copies)(best).flatten
   }
 
   //	calculates the fittest and weakest genome and the average/total
   //	fitness scores
-  private def CalculateBestWorstAvTot() {
+  private def calculateBestWorstAvTot() {
     totalFitness = 0
     var HighestSoFar: Double = 0
     var LowestSoFar: Double = 9999999
-    var i: Int = 0
-    while (i < popSize) {
-      {
-        //update fittest if necessary
-        if (population.get(i).fitness > HighestSoFar) {
-          HighestSoFar = population.get(i).fitness
-          fittestGenome = i
-          bestFitness = HighestSoFar
-        }
-        //update worst if necessary
-        if (population.get(i).fitness < LowestSoFar) {
-          LowestSoFar = population.get(i).fitness
-          worstFitness = LowestSoFar
-        }
-        totalFitness += population.get(i).fitness
-      } //next chromo
-      {
-        i += 1; i
+    for (i <- 0 until popSize) {
+      if (population(i).fitness > HighestSoFar) {
+        HighestSoFar = population(i).fitness
+        fittestGenome = i
+        bestFitness = HighestSoFar
       }
+
+      if (population(i).fitness < LowestSoFar) {
+        LowestSoFar = population(i).fitness
+        worstFitness = LowestSoFar
+      }
+      totalFitness += population(i).fitness
     }
   }
 
-  private def Reset() {
+  private def reset() {
     totalFitness = 0
     bestFitness = 0
     worstFitness = 9999999
   }
 
-  //this runs the GA for one generation.
-  def Epoch(old_pop: util.List[Genome]): util.List[Genome] = {
-    //assign the given population to the classes population
-    population = old_pop
-    //reset the appropriate variables
-    Reset()
+  def epoch(oldPopulation: List[Genome]): List[Genome] = {
+    population = oldPopulation
 
-    population = population.asScala.toList.sortBy(_.fitness).asJava
-    CalculateBestWorstAvTot()
+    reset()
 
-    //create a temporary vector to store new chromosomes
-    val vecNewPop: util.List[Genome] = new util.ArrayList[Genome]
-    //Now to add a little elitism we shall add in some copies of the
-    //fittest genomes. Make sure we add an EVEN number or the roulette
-    //wheel sampling will crash
+    population = population.sortBy(_.fitness)
+    calculateBestWorstAvTot()
+
+    var vecNewPop: List[Genome] = List.empty
+
     if ((CParams.iNumCopiesElite * CParams.iNumElite % 2) == 0) {
-      GrabNBest(CParams.iNumElite, CParams.iNumCopiesElite, vecNewPop)
+      vecNewPop = vecNewPop ++ applyEugenics(CParams.iNumElite, CParams.iNumCopiesElite)
     }
 
     while (vecNewPop.size < popSize) {
@@ -158,15 +130,13 @@ class CGenAlg(
       val baby1Mutated = mutate(baby1)
       val baby2Mutated = mutate(baby2)
 
-      vecNewPop.add(Genome(baby1Mutated, 0))
-      vecNewPop.add(Genome(baby2Mutated, 0))
+      vecNewPop = vecNewPop :+ Genome(baby1Mutated, 0)
+      vecNewPop = vecNewPop :+ Genome(baby2Mutated, 0)
     }
 
     population = vecNewPop
     population
   }
-
-  def GetChromos: util.List[Genome] = population
 
   def averageFitness: Double = totalFitness / popSize
 }

@@ -23,7 +23,7 @@ class CMinesweeper() {
     rotation = RandFloat * CParams.dTwoPi
   }
 
-  def update(mines: util.List[Vector2D]): Boolean = {
+  def update(mines: List[Vector2D]): Boolean = {
     val vClosestMine: Vector2D = GetClosestMine(mines).normalised
 
     val inputs = List(
@@ -57,16 +57,16 @@ class CMinesweeper() {
   }
 
   //	returns the vector from the sweeper to the closest mine
-  private def GetClosestMine(mines: util.List[Vector2D]): Vector2D = {
+  private def GetClosestMine(mines: List[Vector2D]): Vector2D = {
     var closest_so_far: Double = 99999
     var closestObject: Vector2D = Vector2D(0, 0)
     var i: Int = 0
     while (i < mines.size) {
       {
-        val len_to_object: Double = (mines.get(i) - position).length
+        val len_to_object: Double = (mines(i) - position).length
         if (len_to_object < closest_so_far) {
           closest_so_far = len_to_object
-          closestObject = position - mines.get(i)
+          closestObject = position - mines(i)
           closestMine = i
         }
       }
@@ -79,8 +79,8 @@ class CMinesweeper() {
 
   //  this function checks for collision with its closest mine (calculated
   //  earlier and stored in m_iClosestMine)
-  def CheckForMine(mines: util.List[Vector2D], size: Double): Int = {
-    val DistToObject: Vector2D = position - mines.get(closestMine)
+  def CheckForMine(mines: List[Vector2D], size: Double): Int = {
+    val DistToObject: Vector2D = position - mines(closestMine)
     if (DistToObject.length < (size + 5)) return closestMine
     -1
   }
