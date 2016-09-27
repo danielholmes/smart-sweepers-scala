@@ -6,10 +6,10 @@ import org.danielholmes.smartsweepers.CParams
 import scala.collection.JavaConverters._
 
 class CNeuralNet() {
-  private val m_NumInputs = CParams.iNumInputs
-  private val m_NumOutputs = CParams.iNumOutputs
+  private val numInputs = CParams.iNumInputs
+  private val numOutputs = CParams.iNumOutputs
   private val numHiddenLayers = CParams.iNumHidden
-  private val m_NeuronsPerHiddenLyr = CParams.iNeuronsPerHiddenLayer
+  private val neuronsPerHiddenLyr = CParams.iNeuronsPerHiddenLayer
   private val layers = new util.ArrayList[NeuronLayer]
 
   CreateNet()
@@ -22,24 +22,21 @@ class CNeuralNet() {
     //create the layers of the network
     if (numHiddenLayers > 0) {
       //create first hidden layer
-      layers.add(NeuronLayer(m_NeuronsPerHiddenLyr, m_NumInputs))
+      layers.add(NeuronLayer(neuronsPerHiddenLyr, numInputs))
       var i: Int = 0
       while (i < numHiddenLayers - 1) {
         {
-          layers.add(NeuronLayer(m_NeuronsPerHiddenLyr, m_NeuronsPerHiddenLyr))
+          layers.add(NeuronLayer(neuronsPerHiddenLyr, neuronsPerHiddenLyr))
         }
         {
           i += 1; i
         }
       }
-      layers.add(NeuronLayer(m_NumOutputs, m_NeuronsPerHiddenLyr))
+      layers.add(NeuronLayer(numOutputs, neuronsPerHiddenLyr))
     }
-    else layers.add(NeuronLayer(m_NumOutputs, m_NumInputs))
+    else layers.add(NeuronLayer(numOutputs, numInputs))
   }
 
-  /**
-    * returns a vector containing the weights
-    */
   def weights: util.List[Double] = {
     layers.asScala
       .flatMap(_.neurons)
@@ -68,7 +65,7 @@ class CNeuralNet() {
 
   def update(firstInputs: List[Double]): List[Double] = {
     //first check that we have the correct amount of inputs
-    require(firstInputs.size == m_NumInputs)
+    require(firstInputs.size == numInputs)
 
     var inputs: List[Double] = firstInputs
     //stores the resultant outputs from each layer

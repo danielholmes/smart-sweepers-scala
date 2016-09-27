@@ -10,69 +10,43 @@ import org.danielholmes.smartsweepers.ga.{CGenAlg, Genome}
 import scala.collection.JavaConverters._
 
 class CController() {
-  //storage for the population of genomes
   private var m_vecThePopulation: util.List[Genome] = _
-  //and the minesweepers
-  private var m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
-  //and the mines
-  private var m_vecMines: util.List[Vector2D] = new util.ArrayList[Vector2D]
-  //pointer to the GA
+  private val m_vecSweepers: util.List[CMinesweeper] = new util.ArrayList[CMinesweeper]
+  private val m_vecMines: util.List[Vector2D] = new util.ArrayList[Vector2D]
   private var ga: CGenAlg = _
   private var m_NumWeightsInNN: Int = 0
-  //stores the average fitness per generation for use
-  //in graphing.
-  private var averageFitness: util.List[Double] = new util.ArrayList[Double]
-  //stores the best fitness per generation
-  private var bestFitness: util.List[Double] = new util.ArrayList[Double]
-  //toggles the speed at which the simulation runs
+  private val averageFitness: util.List[Double] = new util.ArrayList[Double]
+  private val bestFitness: util.List[Double] = new util.ArrayList[Double]
   private var m_bFastRender: Boolean = false
-  //cycles per generation
   private var m_iTicks: Int = 0
-  //generation counter
   private var m_iGenerations: Int = 0
-  //window dimensions
   private val cxClient: Int = CParams.WindowWidth
   private val cyClient: Int = CParams.WindowHeight
-  private var m_NumSweepers = CParams.iNumSweepers
-  private var m_NumMines = CParams.iNumMines
+  private val m_NumSweepers = CParams.iNumSweepers
+  private val m_NumMines = CParams.iNumMines
 
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.add(new CMinesweeper)
   }
-  //get the total number of weights used in the sweepers
-  //NN so we can initialise the GA
   m_NumWeightsInNN = m_vecSweepers.get(0).GetNumberOfWeights
-  //initialize the Genetic Algorithm class
+
   ga = new CGenAlg(m_NumSweepers, CParams.dMutationRate, CParams.dCrossoverRate, m_NumWeightsInNN)
-  //Get the weights from the GA and insert into the sweepers brains
   m_vecThePopulation = ga.GetChromos
   for (i <- 0 until m_NumSweepers) {
     m_vecSweepers.get(i).PutWeights(m_vecThePopulation.get(i).vecWeights)
   }
-  //initialize mines in random positions within the application window
+
   for (i <- 0 until m_NumMines) {
     m_vecMines.add(new Vector2D(RandFloat * cxClient, RandFloat * cyClient))
   }
 
-  //accessor methods
   def FastRender: Boolean = m_bFastRender
 
-  def FastRender(arg: Boolean) {
-    m_bFastRender = arg
-  }
+  def FastRender(arg: Boolean) = m_bFastRender = arg
 
-  def FastRenderToggle() {
-    m_bFastRender = !m_bFastRender
-  }
+  def FastRenderToggle() = m_bFastRender = !m_bFastRender
 
-  //	This is the main workhorse. The entire simulation is controlled from here.
-  //	The comments should explain what is going on adequately.
-  def Update: Boolean = {
-    //run the sweepers through CParams.iNumTicks amount of cycles. During
-    //this loop each sweepers NN is constantly updated with the appropriate
-    //information from its surroundings. The output from the NN is obtained
-    //and the sweeper is moved. If it encounters a mine its fitness is
-    //updated appropriately,
+  def update: Boolean = {
     if ( {
       m_iTicks += 1; m_iTicks - 1
     } < CParams.iNumTicks) {
@@ -170,8 +144,9 @@ class CController() {
   //  graph showing best and average fitness
   private def PlotStats(g: Graphics2D) {
     g.setColor(Color.BLACK)
-    g.drawString("Best Fitness:    " + ga.bestFitness, 5, 30)
-    g.drawString("Average Fitness: " + ga.averageFitness, 5, 45)
+    g.drawString("Best Fitness:      " + ga.bestFitness, 5, 30)
+    g.drawString("Average Fitness:   " + ga.averageFitness, 5, 45)
+    g.drawString("Best Fitness Ever: " + bestFitness.asScala.reduceOption(_ max _).getOrElse(0), 5, 60)
 
     // Grid lines
     if (bestFitness.asScala.nonEmpty) {

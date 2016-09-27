@@ -49,7 +49,7 @@ object Main {
     var done = false
     while (!done) {
       val frameStart: Long = System.currentTimeMillis
-      if (!g_pController.Update) {
+      if (!g_pController.update) {
         done = true
         // break //todo: break is not supported
       } else {
