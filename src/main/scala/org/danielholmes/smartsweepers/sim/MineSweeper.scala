@@ -1,7 +1,7 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.sim
 
-import org.danielholmes.smartsweepers.Utils.Clamp
-import org.danielholmes.smartsweepers.Utils.RandFloat
+import org.danielholmes.smartsweepers.CParams
+import org.danielholmes.smartsweepers.Utils.{Clamp, RandFloat}
 import org.danielholmes.smartsweepers.nn.NeuralNet
 
 class MineSweeper(private var brain: NeuralNet) {
@@ -20,7 +20,7 @@ class MineSweeper(private var brain: NeuralNet) {
     rotation = RandFloat * CParams.dTwoPi
   }
 
-  def update(mines: List[Vector2D]): Boolean = {
+  def update(mines: List[Vector2D]): Unit = {
     val vClosestMine: Vector2D = GetClosestMine(mines).normalised
 
     val inputs = List(
@@ -48,7 +48,6 @@ class MineSweeper(private var brain: NeuralNet) {
     if (position.x < 0) Vector2D(CParams.WindowWidth, position.y)
     if (position.y > CParams.WindowHeight) Vector2D(position.x, 0)
     if (position.y < 0) Vector2D(position.x, CParams.WindowHeight)
-    true
   }
 
   private def GetClosestMine(mines: List[Vector2D]): Vector2D = {

@@ -6,6 +6,7 @@ import java.awt.geom.AffineTransform
 import org.danielholmes.smartsweepers.Utils.RandFloat
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
 import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
+import org.danielholmes.smartsweepers.sim.{MineSweeper, Vector2D}
 
 class Controller() {
   private val cxClient = CParams.WindowWidth
@@ -49,9 +50,7 @@ class Controller() {
         .map(i => {
           val g = m_vecThePopulation(i)
           val s = m_vecSweepers(i)
-          if (!s.update(m_vecMines)) {
-            throw new RuntimeException("Wrong amount of NN inputs!")
-          }
+          s.update(m_vecMines)
 
           val GrabHit: Int = s.CheckForMine(m_vecMines, CParams.dMineScale)
           if (GrabHit >= 0) {

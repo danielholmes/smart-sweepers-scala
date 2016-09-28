@@ -1,67 +1,167 @@
 package org.danielholmes.smartsweepers
 
-import javax.swing._
-import java.awt._
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.net.URISyntaxException
 import java.nio.file.Paths
 
-object Main {
-  private val szApplicationName: String = "Smart Sweepers v1.0"
-  private val szWindowClassName: String = "sweeper"
+import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
+import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
+import org.danielholmes.smartsweepers.sim.{MineSweeper, Size, Vector2D}
+import org.danielholmes.smartsweepers.ui.ResultsGraphPanel
 
-  private var g_pController: Controller = _
+import scala.swing._
+import scala.swing.event.ButtonClicked
 
-  def main(args: Array[String]) {
-    loadInConfigParameters()
-    g_pController = new Controller
-    val mainPanel: JPanel = new JPanel() {
-      override def paint(g: Graphics) {
-        super.paint(g)
-        g_pController.render(g.asInstanceOf[Graphics2D])
-      }
+object Main extends SimpleSwingApplication {
+  loadInConfigParameters()
+
+  var allResults: List[GenerationSummary] = Nil
+  val ga = new GeneticAlgorithmEnvironment(
+    crossoverRate = 0.7,
+    mutationRate = 0.1,
+    numElites = 4,
+    numEliteCopies = 1,
+    maxPerturbation = 0.3,
+    fitness = new LegacyFitness()
+  )
+
+  var _running = false
+  var results: List[GenerationSummary] = Nil
+
+  object resetButton extends Button { text = "Reset" }
+  object startButton extends Button { text = "Start" }
+  object stopButton extends Button { text = "Stop" }
+  object openSimButton extends Button { text = "See Current Generation" }
+  listenTo(startButton)
+  listenTo(stopButton)
+  listenTo(openSimButton)
+
+  val generationNumberLabel = new Label
+  val maxFitnessLabel = new Label
+  val averageFitnessLabel = new Label
+  val highestFitnessEverLabel = new Label
+
+  val toolBar = new FlowPanel {
+    maximumSize = new Dimension(500, 30)
+
+    contents += resetButton
+    contents += startButton
+    contents += stopButton
+    contents += openSimButton
+  }
+  val statsBar = new FlowPanel {
+    maximumSize = new Dimension(500, 30)
+
+    contents += generationNumberLabel
+    contents += maxFitnessLabel
+    contents += averageFitnessLabel
+    contents += highestFitnessEverLabel
+  }
+
+  val graphPanel = new ResultsGraphPanel {
+    minimumSize = new Dimension(500, 400)
+  }
+
+  def top = new MainFrame() {
+    title = "Smart Sweepers"
+    minimumSize = new Dimension(500, 500)
+    contents = new BoxPanel(Orientation.Vertical) {
+      contents += toolBar
+      contents += statsBar
+      contents += graphPanel
     }
-    mainPanel.setSize(CParams.WindowWidth, CParams.WindowHeight)
-    val frame: JFrame = new JFrame(szApplicationName)
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-    frame.setSize(CParams.WindowWidth, CParams.WindowHeight)
-    frame.getContentPane.add(mainPanel)
-    frame.addKeyListener(new KeyListener() {
-      def keyReleased(e: KeyEvent) {
-      }
+  }
 
-      def keyTyped(e: KeyEvent) {
-      }
+  reactions += {
+    case ButtonClicked(`resetButton`) => println("Reset")
+    case ButtonClicked(`startButton`) => setRunning(true)
+    case ButtonClicked(`stopButton`) => setRunning(false)
+    case ButtonClicked(`openSimButton`) => println("Open sim")
+  }
 
-      def keyPressed(e: KeyEvent) {
-        if (e.getKeyChar == 'f') g_pController.fastRenderToggle()
-        else if (e.getKeyChar == 'r') g_pController = new Controller
-        else if (e.getKeyCode == KeyEvent.VK_ESCAPE) System.exit(0)
-      }
-    })
-    frame.setVisible(true)
-    val millisPerFrame: Long = 1000 / CParams.iFramesPerSecond
-    var done = false
-    while (!done) {
-      val frameStart: Long = System.currentTimeMillis
-      if (!g_pController.update) {
-        done = true
-        // break //todo: break is not supported
-      } else {
-        mainPanel.repaint()
-        if (!g_pController.fastRender) {
-          val timeToNextFrameStart: Long = (frameStart + millisPerFrame) - System.currentTimeMillis
-          if (timeToNextFrameStart > 0) {
-            try {
-              Thread.sleep(timeToNextFrameStart)
-            } catch {
-              case e: InterruptedException => throw new RuntimeException(e)
-            }
-          }
+  def setRunning(running: Boolean): Unit = {
+    _running = running
+    draw()
+  }
+
+  // Old style TODO: Refactor
+  val simSize = Size(400, 400)
+  private val brains: List[NeuralNet] = List.fill(CParams.iNumSweepers) {
+    NeuralNet.createRandom(
+      numOutputs = CParams.iNumOutputs,
+      neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
+      numHiddenLayers = CParams.iNumHidden,
+      numInputs = CParams.iNumInputs,
+      neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
+    )
+  }
+  private var m_vecThePopulation: List[Genome] = brains.map(b => Genome(b.weights, 0))
+  private val m_vecSweepers: List[MineSweeper] = brains.map(new MineSweeper(_))
+  private var m_vecMines: List[Vector2D] = List.fill(CParams.iNumMines) { Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height) }
+  // End old style
+
+  val runner = new Thread(new Runnable {
+    def run() = {
+      while (true) {
+        print("") // Don't know why, removing this stops it working! loop just kind of disappears, like something is gcd
+        if (_running) {
+          runLoop()
         }
       }
+    }
+  })
+
+  override def main(args: Array[String]): Unit = {
+    super.main(args)
+
+    draw()
+    runner.start()
   }
+
+  private def runLoop(): Unit = {
+    for (tick <- 0 until CParams.iNumTicks) {
+      m_vecThePopulation = m_vecSweepers.indices
+        .map(i => {
+          val g = m_vecThePopulation(i)
+          val s = m_vecSweepers(i)
+          s.update(m_vecMines)
+
+          val GrabHit: Int = s.CheckForMine(m_vecMines, CParams.dMineScale)
+          if (GrabHit >= 0) {
+            s.incrementFitness()
+            m_vecMines = m_vecMines.slice(0, GrabHit) ++
+              List(Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height)) ++
+              m_vecMines.slice(GrabHit + 1, m_vecMines.size)
+          }
+
+          Genome(g.weights, s.fitness)
+        })
+        .toList
+    }
+
+    val newResults = ga.runGeneration(m_vecThePopulation)
+    results = results :+ GenerationSummary(newResults.maxFitness, newResults.averageFitness)
+    m_vecThePopulation = newResults.nextPopulation
+    for (i <- m_vecSweepers.indices) {
+      val s = m_vecSweepers(i)
+      s.putWeights(m_vecThePopulation(i).weights)
+      s.reset()
+    }
+
+    draw()
+  }
+
+  def draw(): Unit = {
+    startButton.visible = !_running
+    stopButton.visible = _running
+
+    def formatDouble(d: Double) = f"$d%1.1f"
+
+    generationNumberLabel.text = "Gen: " + results.size
+    maxFitnessLabel.text = "Max Fitness: " + results.lastOption.map(_.maxFitness).map(formatDouble).getOrElse(0)
+    averageFitnessLabel.text = "Ave Fitness: " + results.lastOption.map(_.averageFitness).map(formatDouble).getOrElse(0)
+    highestFitnessEverLabel.text = "Highest Ever Fitness: " + results.map(_.maxFitness).reduceOption(_ max _).map(formatDouble).getOrElse(0)
+
+    graphPanel.results = results
   }
 
   private def loadInConfigParameters() {

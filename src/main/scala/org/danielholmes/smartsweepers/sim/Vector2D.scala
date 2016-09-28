@@ -1,4 +1,4 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.sim
 
 case class Vector2D(x: Double, y: Double) {
   def *(rhs: Double): Vector2D = Vector2D(x * rhs, y * rhs)
