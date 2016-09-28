@@ -9,6 +9,7 @@ class NeuralNet(val layers: List[NeuronLayer], neuronFactory: NeuronFactory) {
 
   lazy val weights: List[Double] = layers.flatMap(_.neurons).flatMap(_.allWeights)
 
+  @deprecated("See NeuralNetFactory")
   def replaceWeights(weights: List[Double]): NeuralNet = {
     var cWeight: Int = 0
     new NeuralNet(
@@ -47,22 +48,15 @@ class NeuralNet(val layers: List[NeuronLayer], neuronFactory: NeuronFactory) {
 }
 
 object NeuralNet {
+  @deprecated("Use NeuralNetworkFactory instead")
   def createRandom(neuronFactory: NeuronFactory, numOutputs: Int, neuronsPerHiddenLayer: Int, numHiddenLayers: Int, numInputs: Int): NeuralNet = {
-    new NeuralNet(
-      {
-        if (numHiddenLayers > 0) {
-          List(createRandomNeuronLayer(neuronFactory, neuronsPerHiddenLayer, numInputs)) ++
-            List.fill(numHiddenLayers - 1) { createRandomNeuronLayer(neuronFactory, neuronsPerHiddenLayer, neuronsPerHiddenLayer) } ++
-            List(createRandomNeuronLayer(neuronFactory, numOutputs, neuronsPerHiddenLayer))
-        } else {
-          List(createRandomNeuronLayer(neuronFactory, numOutputs, numInputs))
-        }
-      },
-      neuronFactory
+    val factory = new NeuralNetFactory(
+      neuronFactory=neuronFactory,
+      numOutputs=numOutputs,
+      neuronsPerHiddenLayer=neuronsPerHiddenLayer,
+      numHiddenLayers=numHiddenLayers,
+      numInputs=numInputs
     )
-  }
-
-  private def createRandomNeuronLayer(neuronFactory: NeuronFactory, aNumNeurons: Int, aNumInputsPerNeuron: Int): NeuronLayer = {
-    NeuronLayer(List.fill(aNumNeurons) { neuronFactory(aNumInputsPerNeuron) })
+    factory.createRandom()
   }
 }

@@ -4,10 +4,10 @@ import java.net.URISyntaxException
 import java.nio.file.Paths
 import java.time.Duration
 
-import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
-import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
-import org.danielholmes.smartsweepers.original.{CParams, Utils}
-import org.danielholmes.smartsweepers.sim.{MineSweeper, Size, Vector2D}
+import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, SimulationFitness}
+import org.danielholmes.smartsweepers.nn.{NeuralNetFactory, NeuronFactory}
+import org.danielholmes.smartsweepers.original.CParams
+import org.danielholmes.smartsweepers.sim.Size
 import org.danielholmes.smartsweepers.ui.{ResultsGraphPanel, SimRunPanel}
 
 import scala.swing._
@@ -16,14 +16,29 @@ import scala.swing.event.ButtonClicked
 object Main extends SimpleSwingApplication {
   loadInConfigParameters()
 
-  var allResults: List[GenerationSummary] = Nil
+  val simSize = Size(400, 400)
+  var allResults: List[GenerationSummary] = List.empty
+  var population: List[Genome] = List.empty
+  var lastPopulation: List[Genome] = List.empty
+  val nnFactory = new NeuralNetFactory(
+    numOutputs = CParams.iNumOutputs,
+    neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
+    numHiddenLayers = CParams.iNumHidden,
+    numInputs = CParams.iNumInputs,
+    neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
+  )
   val ga = new GeneticAlgorithmEnvironment(
     crossoverRate = 0.7,
     mutationRate = 0.1,
     numElites = 4,
     numEliteCopies = 1,
     maxPerturbation = 0.3,
-    fitness = new LegacyFitness()
+    fitness = new SimulationFitness(
+      size=simSize,
+      numTicks=CParams.iNumTicks,
+      numMines=CParams.iNumMines,
+      neuralNetFactory=nnFactory
+    )
   )
 
   var _running = false
@@ -88,13 +103,6 @@ object Main extends SimpleSwingApplication {
     draw()
   }
 
-  // Old style TODO: Refactor
-  val simSize = Size(400, 400)
-  private var m_vecThePopulation: List[Genome] = List.empty
-  private var m_vecSweepers: List[MineSweeper] = List.empty
-  private var m_vecMines: List[Vector2D] = List.empty
-  // End old style
-
   val runner = new Thread(new Runnable {
     def run() = {
       while (true) {
@@ -123,7 +131,7 @@ object Main extends SimpleSwingApplication {
     val simFrame = new Frame {
       title = s"Smart Sweepers - Generation ${results.size}"
       minimumSize = new Dimension(400, 400)
-      val runPanel = new SimRunPanel(m_vecSweepers.map(_.brain))
+      val runPanel = new SimRunPanel(population.map(p => nnFactory.createFromWeights(p.weights)))
       runPanel.minimumSize = minimumSize
       contents = runPanel
 
@@ -136,51 +144,18 @@ object Main extends SimpleSwingApplication {
   }
 
   private def createSimulation(): Unit = {
-    val brains = List.fill(CParams.iNumSweepers) {
-      NeuralNet.createRandom(
-        numOutputs = CParams.iNumOutputs,
-        neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
-        numHiddenLayers = CParams.iNumHidden,
-        numInputs = CParams.iNumInputs,
-        neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
-      )
-    }
-    m_vecThePopulation = brains.map(b => Genome(b.weights, 0))
-    m_vecSweepers = brains.map(new MineSweeper(_))
-    m_vecMines = List.fill(CParams.iNumMines) { Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height) }
+    population = List.fill(CParams.iNumSweepers) { Genome(nnFactory.createRandom().weights, 0) }
+    lastPopulation = population
   }
 
   private def runLoop(): Unit = {
     val start = System.currentTimeMillis()
-    for (tick <- 0 until CParams.iNumTicks) {
-      m_vecThePopulation = m_vecSweepers.indices
-        .map(i => {
-          val g = m_vecThePopulation(i)
-          val s = m_vecSweepers(i)
-          s.update(m_vecMines)
-
-          val GrabHit: Int = s.checkForMine(m_vecMines, CParams.dMineScale)
-          if (GrabHit >= 0) {
-            s.incrementFitness()
-            m_vecMines = m_vecMines.slice(0, GrabHit) ++
-              List(Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height)) ++
-              m_vecMines.slice(GrabHit + 1, m_vecMines.size)
-          }
-
-          Genome(g.weights, s.fitness)
-        })
-        .toList
-    }
-
-    val newResults = ga.runGeneration(m_vecThePopulation)
+    val newResults = ga.runGeneration(population)
     val timeTook = System.currentTimeMillis() - start
     results = results :+ GenerationSummary(newResults.maxFitness, newResults.averageFitness, Duration.ofMillis(timeTook))
-    m_vecThePopulation = newResults.nextPopulation
-    for (i <- m_vecSweepers.indices) {
-      val s = m_vecSweepers(i)
-      s.putWeights(m_vecThePopulation(i).weights)
-      s.reset()
-    }
+
+    lastPopulation = newResults.performance.map(_.genome).toList
+    population = newResults.nextPopulation
 
     draw()
   }
