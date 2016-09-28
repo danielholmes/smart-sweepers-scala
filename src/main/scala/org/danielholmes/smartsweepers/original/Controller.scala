@@ -1,11 +1,12 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.original
 
-import java.awt.{Color, Graphics2D}
 import java.awt.geom.AffineTransform
+import java.awt.{Color, Graphics2D}
 
-import org.danielholmes.smartsweepers.Utils.RandFloat
+import org.danielholmes.smartsweepers.GenerationSummary
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
 import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
+import org.danielholmes.smartsweepers.original.Utils.RandFloat
 import org.danielholmes.smartsweepers.sim.{MineSweeper, Vector2D}
 
 class Controller() {
@@ -52,7 +53,7 @@ class Controller() {
           val s = m_vecSweepers(i)
           s.update(m_vecMines)
 
-          val GrabHit: Int = s.CheckForMine(m_vecMines, CParams.dMineScale)
+          val GrabHit: Int = s.checkForMine(m_vecMines, CParams.dMineScale)
           if (GrabHit >= 0) {
             s.incrementFitness()
             m_vecMines = m_vecMines.slice(0, GrabHit) ++

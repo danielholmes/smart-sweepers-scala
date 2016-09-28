@@ -1,10 +1,10 @@
 package org.danielholmes.smartsweepers.sim
 
-import org.danielholmes.smartsweepers.CParams
-import org.danielholmes.smartsweepers.Utils.{Clamp, RandFloat}
+import org.danielholmes.smartsweepers.original.Utils.{Clamp, RandFloat}
 import org.danielholmes.smartsweepers.nn.NeuralNet
+import org.danielholmes.smartsweepers.original.CParams
 
-class MineSweeper(private var brain: NeuralNet) {
+class MineSweeper(private var _brain: NeuralNet) {
   var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)
   private var lookAt: Vector2D = Vector2D()
   var rotation: Double = RandFloat * CParams.dTwoPi
@@ -20,6 +20,8 @@ class MineSweeper(private var brain: NeuralNet) {
     rotation = RandFloat * CParams.dTwoPi
   }
 
+  def brain = _brain
+
   def update(mines: List[Vector2D]): Unit = {
     val vClosestMine: Vector2D = GetClosestMine(mines).normalised
 
@@ -29,7 +31,7 @@ class MineSweeper(private var brain: NeuralNet) {
       lookAt.x,
       lookAt.y
     )
-    val output = brain.update(inputs)
+    val output = _brain.update(inputs)
     assert(output.size == 2, output.size + " outputs doesn't equal expected 2")
 
     leftTrack = output(0)
@@ -70,7 +72,7 @@ class MineSweeper(private var brain: NeuralNet) {
     closestObject
   }
 
-  def CheckForMine(mines: List[Vector2D], size: Double): Int = {
+  def checkForMine(mines: List[Vector2D], size: Double): Int = {
     val DistToObject: Vector2D = position - mines(closestMine)
     if (DistToObject.length < (size + 5)) return closestMine
     -1
@@ -78,5 +80,5 @@ class MineSweeper(private var brain: NeuralNet) {
 
   def incrementFitness() = fitness += 1
 
-  def putWeights(w: List[Double]) = brain = brain.replaceWeights(w)
+  def putWeights(w: List[Double]) = _brain = _brain.replaceWeights(w)
 }

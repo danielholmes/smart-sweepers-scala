@@ -5,8 +5,9 @@ import java.nio.file.Paths
 
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
 import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
+import org.danielholmes.smartsweepers.original.{CParams, Utils}
 import org.danielholmes.smartsweepers.sim.{MineSweeper, Size, Vector2D}
-import org.danielholmes.smartsweepers.ui.ResultsGraphPanel
+import org.danielholmes.smartsweepers.ui.{ResultsGraphPanel, SimRunPanel}
 
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -76,7 +77,7 @@ object Main extends SimpleSwingApplication {
     case ButtonClicked(`resetButton`) => reset()
     case ButtonClicked(`startButton`) => setRunning(true)
     case ButtonClicked(`stopButton`) => setRunning(false)
-    case ButtonClicked(`openSimButton`) => println("Open sim")
+    case ButtonClicked(`openSimButton`) => openSim()
   }
 
   def setRunning(running: Boolean): Unit = {
@@ -86,7 +87,6 @@ object Main extends SimpleSwingApplication {
 
   // Old style TODO: Refactor
   val simSize = Size(400, 400)
-  private var brains: List[NeuralNet] = List.empty
   private var m_vecThePopulation: List[Genome] = List.empty
   private var m_vecSweepers: List[MineSweeper] = List.empty
   private var m_vecMines: List[Vector2D] = List.empty
@@ -116,8 +116,24 @@ object Main extends SimpleSwingApplication {
     draw()
   }
 
+  private def openSim(): Unit = {
+    val simFrame = new Frame {
+      title = s"Smart Sweepers - Generation ${results.size}"
+      minimumSize = new Dimension(400, 400)
+      val runPanel = new SimRunPanel(m_vecSweepers.map(_.brain))
+      runPanel.minimumSize = minimumSize
+      contents = runPanel
+
+      override def closeOperation(): Unit = {
+        super.closeOperation()
+        runPanel.dispose()
+      }
+    }
+    simFrame.open()
+  }
+
   private def createSimulation(): Unit = {
-    brains = List.fill(CParams.iNumSweepers) {
+    val brains = List.fill(CParams.iNumSweepers) {
       NeuralNet.createRandom(
         numOutputs = CParams.iNumOutputs,
         neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
@@ -139,7 +155,7 @@ object Main extends SimpleSwingApplication {
           val s = m_vecSweepers(i)
           s.update(m_vecMines)
 
-          val GrabHit: Int = s.CheckForMine(m_vecMines, CParams.dMineScale)
+          val GrabHit: Int = s.checkForMine(m_vecMines, CParams.dMineScale)
           if (GrabHit >= 0) {
             s.incrementFitness()
             m_vecMines = m_vecMines.slice(0, GrabHit) ++

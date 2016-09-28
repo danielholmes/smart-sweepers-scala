@@ -1,13 +1,12 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.original
 
-import javax.swing._
 import java.awt._
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
+import java.awt.event.{KeyEvent, KeyListener}
 import java.net.URISyntaxException
 import java.nio.file.Paths
+import javax.swing._
 
-object OldMain {
+object OriginalMain {
   private val szApplicationName: String = "Smart Sweepers v1.0"
   private val szWindowClassName: String = "sweeper"
 

@@ -1,8 +1,9 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.original
 
 import java.io.IOException
 import java.lang.Double
 import java.nio.file.{Files, Path}
+
 import scala.collection.JavaConverters._
 
 object CParams {

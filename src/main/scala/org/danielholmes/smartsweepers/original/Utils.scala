@@ -1,4 +1,4 @@
-package org.danielholmes.smartsweepers
+package org.danielholmes.smartsweepers.original
 
 import java.util.Random
 

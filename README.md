@@ -24,7 +24,7 @@ Feedforward Neural Network with supervised learning (a simulation environment) u
 
 A UI matching the supplied/original solution is also available:
 
-`sbt "run-main org.danielholmes.smartsweepers.OldMain"`
+`sbt "run-main org.danielholmes.smartsweepers.original.OriginalMain"`
 
 - Press **F** to toggle between viewing the current sweepers at real time and a sped up evolution only
 - Press **R** to reset
