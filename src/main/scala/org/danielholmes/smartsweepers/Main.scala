@@ -31,6 +31,7 @@ object Main extends SimpleSwingApplication {
   object startButton extends Button { text = "Start" }
   object stopButton extends Button { text = "Stop" }
   object openSimButton extends Button { text = "See Current Generation" }
+  listenTo(resetButton)
   listenTo(startButton)
   listenTo(stopButton)
   listenTo(openSimButton)
@@ -72,7 +73,7 @@ object Main extends SimpleSwingApplication {
   }
 
   reactions += {
-    case ButtonClicked(`resetButton`) => println("Reset")
+    case ButtonClicked(`resetButton`) => reset()
     case ButtonClicked(`startButton`) => setRunning(true)
     case ButtonClicked(`stopButton`) => setRunning(false)
     case ButtonClicked(`openSimButton`) => println("Open sim")
@@ -85,18 +86,10 @@ object Main extends SimpleSwingApplication {
 
   // Old style TODO: Refactor
   val simSize = Size(400, 400)
-  private val brains: List[NeuralNet] = List.fill(CParams.iNumSweepers) {
-    NeuralNet.createRandom(
-      numOutputs = CParams.iNumOutputs,
-      neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
-      numHiddenLayers = CParams.iNumHidden,
-      numInputs = CParams.iNumInputs,
-      neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
-    )
-  }
-  private var m_vecThePopulation: List[Genome] = brains.map(b => Genome(b.weights, 0))
-  private val m_vecSweepers: List[MineSweeper] = brains.map(new MineSweeper(_))
-  private var m_vecMines: List[Vector2D] = List.fill(CParams.iNumMines) { Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height) }
+  private var brains: List[NeuralNet] = List.empty
+  private var m_vecThePopulation: List[Genome] = List.empty
+  private var m_vecSweepers: List[MineSweeper] = List.empty
+  private var m_vecMines: List[Vector2D] = List.empty
   // End old style
 
   val runner = new Thread(new Runnable {
@@ -113,8 +106,29 @@ object Main extends SimpleSwingApplication {
   override def main(args: Array[String]): Unit = {
     super.main(args)
 
-    draw()
+    reset()
     runner.start()
+  }
+
+  private def reset(): Unit = {
+    results = List.empty
+    createSimulation()
+    draw()
+  }
+
+  private def createSimulation(): Unit = {
+    brains = List.fill(CParams.iNumSweepers) {
+      NeuralNet.createRandom(
+        numOutputs = CParams.iNumOutputs,
+        neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
+        numHiddenLayers = CParams.iNumHidden,
+        numInputs = CParams.iNumInputs,
+        neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
+      )
+    }
+    m_vecThePopulation = brains.map(b => Genome(b.weights, 0))
+    m_vecSweepers = brains.map(new MineSweeper(_))
+    m_vecMines = List.fill(CParams.iNumMines) { Vector2D(Utils.RandFloat * simSize.width, Utils.RandFloat * simSize.height) }
   }
 
   private def runLoop(): Unit = {
@@ -153,6 +167,7 @@ object Main extends SimpleSwingApplication {
   def draw(): Unit = {
     startButton.visible = !_running
     stopButton.visible = _running
+    resetButton.enabled = !_running
 
     def formatDouble(d: Double) = f"$d%1.1f"
 
