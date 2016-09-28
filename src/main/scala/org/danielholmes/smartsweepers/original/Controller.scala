@@ -2,6 +2,7 @@ package org.danielholmes.smartsweepers.original
 
 import java.awt.geom.AffineTransform
 import java.awt.{Color, Graphics2D}
+import java.time.Duration
 
 import org.danielholmes.smartsweepers.GenerationSummary
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
@@ -69,7 +70,7 @@ class Controller() {
     {
       m_iTicks = 0
       val newResult = ga.runGeneration(m_vecThePopulation)
-      allResults = allResults :+ GenerationSummary(newResult.maxFitness, newResult.averageFitness)
+      allResults = allResults :+ GenerationSummary(newResult.maxFitness, newResult.averageFitness, Duration.ZERO) // Duration not used
       m_vecThePopulation = newResult.nextPopulation
 
       for (i <- m_vecSweepers.indices) {

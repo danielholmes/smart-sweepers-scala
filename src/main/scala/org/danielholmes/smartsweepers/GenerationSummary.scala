@@ -1,3 +1,5 @@
 package org.danielholmes.smartsweepers
 
-case class GenerationSummary(maxFitness: Double, averageFitness: Double)
+import java.time.Duration
+
+case class GenerationSummary(maxFitness: Double, averageFitness: Double, processingTime: Duration)

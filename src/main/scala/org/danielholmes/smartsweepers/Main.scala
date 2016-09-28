@@ -2,6 +2,7 @@ package org.danielholmes.smartsweepers
 
 import java.net.URISyntaxException
 import java.nio.file.Paths
+import java.time.Duration
 
 import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
 import org.danielholmes.smartsweepers.nn.{NeuralNet, NeuronFactory}
@@ -41,6 +42,7 @@ object Main extends SimpleSwingApplication {
   val maxFitnessLabel = new Label
   val averageFitnessLabel = new Label
   val highestFitnessEverLabel = new Label
+  val gpsLabel = new Label
 
   val toolBar = new FlowPanel {
     maximumSize = new Dimension(500, 30)
@@ -57,6 +59,7 @@ object Main extends SimpleSwingApplication {
     contents += maxFitnessLabel
     contents += averageFitnessLabel
     contents += highestFitnessEverLabel
+    contents += gpsLabel
   }
 
   val graphPanel = new ResultsGraphPanel {
@@ -148,6 +151,7 @@ object Main extends SimpleSwingApplication {
   }
 
   private def runLoop(): Unit = {
+    val start = System.currentTimeMillis()
     for (tick <- 0 until CParams.iNumTicks) {
       m_vecThePopulation = m_vecSweepers.indices
         .map(i => {
@@ -169,7 +173,8 @@ object Main extends SimpleSwingApplication {
     }
 
     val newResults = ga.runGeneration(m_vecThePopulation)
-    results = results :+ GenerationSummary(newResults.maxFitness, newResults.averageFitness)
+    val timeTook = System.currentTimeMillis() - start
+    results = results :+ GenerationSummary(newResults.maxFitness, newResults.averageFitness, Duration.ofMillis(timeTook))
     m_vecThePopulation = newResults.nextPopulation
     for (i <- m_vecSweepers.indices) {
       val s = m_vecSweepers(i)
@@ -188,9 +193,15 @@ object Main extends SimpleSwingApplication {
     def formatDouble(d: Double) = f"$d%1.1f"
 
     generationNumberLabel.text = "Gen: " + results.size
-    maxFitnessLabel.text = "Max Fitness: " + results.lastOption.map(_.maxFitness).map(formatDouble).getOrElse(0)
-    averageFitnessLabel.text = "Ave Fitness: " + results.lastOption.map(_.averageFitness).map(formatDouble).getOrElse(0)
-    highestFitnessEverLabel.text = "Highest Ever Fitness: " + results.map(_.maxFitness).reduceOption(_ max _).map(formatDouble).getOrElse(0)
+    maxFitnessLabel.text = "Max Fit: " + results.lastOption.map(_.maxFitness).map(formatDouble).getOrElse(0)
+    averageFitnessLabel.text = "Ave Fit: " + results.lastOption.map(_.averageFitness).map(formatDouble).getOrElse(0)
+    highestFitnessEverLabel.text = "All Time Max Fit: " + results.map(_.maxFitness).reduceOption(_ max _).map(formatDouble).getOrElse(0)
+    if (results.nonEmpty) {
+      val recentResults = results.takeRight(8)
+      gpsLabel.text = "ms/Gen: " + recentResults.map(_.processingTime.toMillis).sum / recentResults.size
+    } else {
+      gpsLabel.text = ""
+    }
 
     graphPanel.results = results
   }
