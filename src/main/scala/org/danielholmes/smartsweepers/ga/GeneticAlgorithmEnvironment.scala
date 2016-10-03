@@ -33,7 +33,7 @@ class GeneticAlgorithmEnvironment(
         val dad: Genome = selectParentByRoulette(performance, totalFitness)
         val (baby1, baby2) = crossover(mum.weights, dad.weights)
 
-        reproduce(current ++ List(baby1, baby2).map(b => Genome(mutate(b), 0)))
+        reproduce(current ++ List(baby1, baby2).map(b => Genome(mutate(b))))
       }
     }
 

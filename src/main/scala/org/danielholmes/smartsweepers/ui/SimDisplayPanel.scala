@@ -10,7 +10,7 @@ import scala.swing.{Graphics2D, Panel}
 
 class SimDisplayPanel(private var _sim: Simulation) extends Panel {
   def sim_=(newSim: Simulation): Unit = {
-    _sim = sim
+    _sim = newSim
     repaint()
   }
 
@@ -21,26 +21,27 @@ class SimDisplayPanel(private var _sim: Simulation) extends Panel {
 
     for (mine <- sim.mines) {
       g.setColor(Color.GREEN)
-      g.drawRect((mine.x - CParams.dMineScale).toInt, (mine.y - CParams.dMineScale).toInt, (CParams.dMineScale * 2).toInt, (CParams.dMineScale * 2).toInt)
+      g.drawRect((mine.position.x - mine.size).toInt, (mine.position.y - mine.size).toInt, mine.size * 2, mine.size * 2)
     }
 
-    for (i <- sim.sweepers.indices) {
-      if (i == CParams.iNumElite) g.setColor(Color.RED)
+    val orderedSweepers = sim.sweepers.sortBy(_.numMinesCollected).reverse
+    for (i <- orderedSweepers.indices) {
+      if (i <= CParams.iNumElite) g.setColor(Color.RED)
       else g.setColor(Color.BLACK)
-      val s: MineSweeper = sim.sweepers(i)
+      val s: MineSweeper = orderedSweepers(i)
       val oldTransform: AffineTransform = g.getTransform
       g.rotate(s.rotation, s.position.x, s.position.y)
       // Body
-      g.drawRect((s.position.x - CParams.iSweeperScale).toInt, (s.position.y - CParams.iSweeperScale).toInt, CParams.iSweeperScale * 2, CParams.iSweeperScale * 2)
+      g.drawRect((s.position.x - s.size).toInt, (s.position.y - s.size).toInt, s.size * 2, s.size * 2)
       // Left Track
-      val trackWidth: Int = CParams.iSweeperScale / 2
-      g.drawRect((s.position.x - CParams.iSweeperScale).toInt, (s.position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
+      val trackWidth: Int = s.size / 2
+      g.drawRect((s.position.x - s.size).toInt, (s.position.y - s.size).toInt, trackWidth, s.size * 2)
       // Right Track
-      g.drawRect((s.position.x + CParams.iSweeperScale - trackWidth).toInt, (s.position.y - CParams.iSweeperScale).toInt, trackWidth, CParams.iSweeperScale * 2)
+      g.drawRect((s.position.x + s.size - trackWidth).toInt, (s.position.y - s.size).toInt, trackWidth, s.size * 2)
       // Nose
-      val NOSE_SIZE: Int = CParams.iSweeperScale
-      g.drawLine((s.position.x - CParams.iSweeperScale).toInt, (s.position.y + CParams.iSweeperScale).toInt, s.position.x.toInt, (s.position.y + CParams.iSweeperScale + NOSE_SIZE).toInt)
-      g.drawLine(s.position.x.toInt, (s.position.y + CParams.iSweeperScale + NOSE_SIZE).toInt, (s.position.x + CParams.iSweeperScale).toInt, (s.position.y + CParams.iSweeperScale).toInt)
+      val NOSE_SIZE: Int = s.size
+      g.drawLine((s.position.x - s.size).toInt, (s.position.y + s.size).toInt, s.position.x.toInt, (s.position.y + s.size + NOSE_SIZE).toInt)
+      g.drawLine(s.position.x.toInt, (s.position.y + s.size + NOSE_SIZE).toInt, (s.position.x + s.size).toInt, (s.position.y + s.size).toInt)
       g.setTransform(oldTransform)
     }
   }

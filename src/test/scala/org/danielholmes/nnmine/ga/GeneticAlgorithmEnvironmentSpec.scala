@@ -1,6 +1,6 @@
 package org.danielholmes.nnmine.ga
 
-import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, LegacyFitness}
+import org.danielholmes.smartsweepers.ga.{FixedFitness, GeneticAlgorithmEnvironment, Genome}
 import org.scalatest._
 
 class GeneticAlgorithmEnvironmentSpec extends FlatSpec with Matchers {
@@ -11,9 +11,9 @@ class GeneticAlgorithmEnvironmentSpec extends FlatSpec with Matchers {
       numElites = 0,
       numEliteCopies = 1,
       maxPerturbation = 5,
-      fitness = new LegacyFitness()
+      fitness = new FixedFitness(0)
     )
-    val results = ga.runGeneration(List(Genome(List.fill(44) { 10 }, 0.0), Genome(List.fill(44) { 10 }, 0.0)))
+    val results = ga.runGeneration(List(Genome(List.fill(44) { 10 }), Genome(List.fill(44) { 10 })))
     val mutatedWeights = results.nextPopulation.flatMap(_.weights)
     for (w <- mutatedWeights) {
       w should be <= 15.0
@@ -30,15 +30,15 @@ class GeneticAlgorithmEnvironmentSpec extends FlatSpec with Matchers {
       numElites = 2,
       numEliteCopies = 2,
       maxPerturbation = 5,
-      fitness = new LegacyFitness()
+      fitness = new FixedFitness(0)
     )
-    val best1 = Genome(List.fill(44) { 10 }, 1.0)
-    val best2 = Genome(List.fill(44) { 10 }, 0.9)
+    val best1 = Genome(List.fill(44) { 10 })
+    val best2 = Genome(List.fill(44) { 10 })
     val results = ga.runGeneration(List(
       best1,
-      Genome(List.fill(44) { 9 }, 0.8),
+      Genome(List.fill(44) { 9 }),
       best2,
-      Genome(List.fill(44) { 8 }, 0.8)
+      Genome(List.fill(44) { 8 })
     ))
     results.nextPopulation should contain theSameElementsAs List(best1, best1, best2, best2)
   }

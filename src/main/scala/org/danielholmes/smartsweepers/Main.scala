@@ -149,7 +149,7 @@ object Main extends SimpleSwingApplication {
   }
 
   private def createSimulation(): Unit = {
-    population = List.fill(CParams.iNumSweepers) { Genome(nnFactory.createRandom().weights, 0) }
+    population = List.fill(CParams.iNumSweepers) { Genome(nnFactory.createRandom().weights) }
     lastPopulation = population
   }
 

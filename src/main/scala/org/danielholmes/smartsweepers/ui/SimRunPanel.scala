@@ -3,7 +3,7 @@ package org.danielholmes.smartsweepers.ui
 import java.util.{Timer, TimerTask}
 
 import org.danielholmes.smartsweepers.nn.NeuralNet
-import org.danielholmes.smartsweepers.sim.{MineSweeper, Simulation, Size, Vector2D}
+import org.danielholmes.smartsweepers.sim._
 
 import scala.swing.{BoxPanel, Graphics2D, Orientation}
 import scala.util.Random
@@ -18,8 +18,8 @@ class SimRunPanel(
 
   private var sim = new Simulation(
     simSize,
-    brains.map(b => new MineSweeper(b)),
-    List.fill(numMines) { Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height) }
+    brains.map(b => new MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2)),
+    List.fill(numMines) { Mine(Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height)) }
   )
 
   private val displayPanel = new SimDisplayPanel(sim)

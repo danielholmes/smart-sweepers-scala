@@ -26,11 +26,9 @@ object CParams {
             case "dBias" => dBias = Double.parseDouble(value)
             case "dMaxTurnRate" => dMaxTurnRate = Double.parseDouble(value)
             case "dMaxSpeed" => dMaxSpeed = Double.parseDouble(value)
-            case "iSweeperScale" => iSweeperScale = Integer.parseInt(value)
             case "iNumMines" => iNumMines = Integer.parseInt(value)
             case "iNumSweepers" => iNumSweepers = Integer.parseInt(value)
             case "iNumTicks" => iNumTicks = Integer.parseInt(value)
-            case "dMineScale" => dMineScale = Double.parseDouble(value)
             case "dCrossoverRate" => dCrossoverRate = Double.parseDouble(value)
             case "dMutationRate" => dMutationRate = Double.parseDouble(value)
             case "dMaxPerturbation" => dMaxPerturbation = Double.parseDouble(value)
@@ -47,9 +45,6 @@ object CParams {
     }
   }
 
-  var dPi: Double = 3.14159265358979
-  var dHalfPi: Double = dPi / 2
-  var dTwoPi: Double = dPi * 2
   var WindowWidth: Int = 400
   var WindowHeight: Int = 400
   var iFramesPerSecond: Int = 0
@@ -61,11 +56,9 @@ object CParams {
   var dBias: Double = -1.0
   var dMaxTurnRate: Double = 0.0
   var dMaxSpeed: Double = 0.0
-  var iSweeperScale: Int = 0
   var iNumSweepers: Int = 0
   var iNumMines: Int = 0
   var iNumTicks: Int = 0
-  var dMineScale: Double = 0.0
   var dCrossoverRate: Double = 0.0
   //Try figures around 0.05 to 0.3 ish
   var dMutationRate: Double = 0.0

@@ -1,25 +1,22 @@
 package org.danielholmes.smartsweepers.sim
 
-import org.danielholmes.smartsweepers.original.CParams
-
-import scala.util.Random
-
-class Simulation(private val size: Size, var sweepers: List[MineSweeper], var mines: List[Vector2D]) {
-  private val randomiser = new Random
-
+class Simulation(private val size: Size, var sweepers: List[MineSweeper], val mines: List[Mine]) {
   def update(): Simulation = {
-    for (s <- sweepers) {
-      s.update(mines)
+    var newMines = mines
+    val newSweepers = sweepers.map(s => {
+      var newS = s.update(newMines)
 
-      val grabHit: Int = s.checkForMine(mines, CParams.dMineScale)
+      val grabHit = newS.checkForMine(newMines)
       if (grabHit >= 0) {
-        s.incrementFitness()
-        mines = mines.slice(0, grabHit) ++
-          List(Vector2D(randomiser.nextDouble * CParams.WindowWidth, randomiser.nextDouble * CParams.WindowHeight)) ++
-          mines.slice(grabHit + 1, mines.size)
+        newS = newS.collectMine()
+        newMines = newMines.slice(0, grabHit) ++
+          List(Mine(size.createRandomPosition())) ++
+          newMines.slice(grabHit + 1, newMines.size)
       }
-    }
 
-    this
+      newS
+    })
+
+    new Simulation(size, newSweepers, newMines)
   }
 }
