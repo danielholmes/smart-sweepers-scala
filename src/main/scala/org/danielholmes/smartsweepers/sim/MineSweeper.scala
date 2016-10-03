@@ -1,8 +1,8 @@
 package org.danielholmes.smartsweepers.sim
 
-import org.danielholmes.smartsweepers.original.Utils.{Clamp, RandFloat}
 import org.danielholmes.smartsweepers.nn.NeuralNet
 import org.danielholmes.smartsweepers.original.CParams
+import org.danielholmes.smartsweepers.original.Utils.{Clamp, RandFloat}
 
 class MineSweeper(private var _brain: NeuralNet) {
   var position: Vector2D = Vector2D(RandFloat * CParams.WindowWidth, RandFloat * CParams.WindowHeight)

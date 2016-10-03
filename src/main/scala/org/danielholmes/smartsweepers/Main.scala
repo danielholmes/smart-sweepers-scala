@@ -131,7 +131,12 @@ object Main extends SimpleSwingApplication {
     val simFrame = new Frame {
       title = s"Smart Sweepers - Generation ${results.size}"
       minimumSize = new Dimension(400, 400)
-      val runPanel = new SimRunPanel(population.map(p => nnFactory.createFromWeights(p.weights)))
+      val runPanel = new SimRunPanel(
+        simSize = simSize,
+        numMines = CParams.iNumMines,
+        framesPerSecond = CParams.iFramesPerSecond,
+        brains = population.map(p => nnFactory.createFromWeights(p.weights))
+      )
       runPanel.minimumSize = minimumSize
       contents = runPanel
 

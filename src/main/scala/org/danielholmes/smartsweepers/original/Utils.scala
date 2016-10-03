@@ -4,8 +4,6 @@ import java.util.Random
 
 @deprecated
 object Utils {
-  // Random number -1 to 1
-  def RandomClamped: Double = RandFloat - RandFloat
 
   // Rand float 0 >= x < 1
   def RandFloat: Double = rand.nextDouble
