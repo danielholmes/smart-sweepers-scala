@@ -4,7 +4,6 @@ import scala.annotation.tailrec
 import scala.util.Random
 
 case class Simulation(private val size: Size, items: List[SimItem]) {
-  assert(items.size == 70, items.size + " should = 70")
   def mines = items.filter(_.isInstanceOf[Mine]).map(_.asInstanceOf[Mine])
   def sweepers = items.filter(_.isInstanceOf[MineSweeper]).map(_.asInstanceOf[MineSweeper])
 
