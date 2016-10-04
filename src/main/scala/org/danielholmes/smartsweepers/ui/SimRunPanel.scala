@@ -2,7 +2,7 @@ package org.danielholmes.smartsweepers.ui
 
 import java.util.{Timer, TimerTask}
 
-import org.danielholmes.smartsweepers.ga.{GenerationResults, GenomeResult}
+import org.danielholmes.smartsweepers.ga.GenomeResult
 import org.danielholmes.smartsweepers.nn.NeuralNetFactory
 import org.danielholmes.smartsweepers.sim._
 

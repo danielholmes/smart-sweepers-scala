@@ -44,10 +44,10 @@ object Main extends SimpleSwingApplication {
   object resetButton extends Button { text = "Reset" }
   object startButton extends Button { text = "Start" }
   object stopButton extends Button { text = "Stop" }
-  object openSimButton extends Button { text = "See Current Generation" }
-  listenTo(resetButton)
+  object openSimButton extends Button { text = "See Last Generation" }
   listenTo(startButton)
   listenTo(stopButton)
+  listenTo(resetButton)
   listenTo(openSimButton)
 
   val generationNumberLabel = new Label
