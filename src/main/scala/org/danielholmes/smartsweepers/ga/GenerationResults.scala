@@ -1,6 +1,6 @@
 package org.danielholmes.smartsweepers.ga
 
-case class GenerationResults(performance: Traversable[GenomeResult], nextPopulation: List[Genome]) {
+case class GenerationResults(performance: List[GenomeResult], nextPopulation: List[Genome]) {
   lazy val fittestResult = performance.maxBy(_.fitness)
   lazy val maxFitness = fittestResult.fitness
 

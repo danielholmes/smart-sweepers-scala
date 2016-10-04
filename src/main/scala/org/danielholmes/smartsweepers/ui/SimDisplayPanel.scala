@@ -3,12 +3,15 @@ package org.danielholmes.smartsweepers.ui
 import java.awt.Color
 import java.awt.geom.AffineTransform
 
+import org.danielholmes.smartsweepers.ga.GenomeResult
 import org.danielholmes.smartsweepers.sim.{Mine, MineSweeper, SimItem, Simulation}
 
+import scala.annotation.tailrec
 import scala.swing.{Graphics2D, Panel}
 
-class SimDisplayPanel(private var _sim: Simulation) extends Panel {
-  private val NumberToHighlight = 4
+class SimDisplayPanel(private var _sim: Simulation, private val results: List[GenomeResult]) extends Panel {
+  private val numberToHighlight = 4
+  private val eliteGenomeWeights = results.sortBy(_.fitness).map(_.genome).map(_.weights).reverse.take(numberToHighlight)
 
   def sim_=(newSim: Simulation): Unit = {
     _sim = newSim
@@ -23,6 +26,7 @@ class SimDisplayPanel(private var _sim: Simulation) extends Panel {
     renderItems(g, sim.items)
   }
 
+  @tailrec
   private def renderItems(g: Graphics2D, items: List[SimItem]): Unit = {
     items match {
       case Nil => Unit
@@ -43,8 +47,11 @@ class SimDisplayPanel(private var _sim: Simulation) extends Panel {
   }
 
   private def renderMineSweeper(g: Graphics2D, s: MineSweeper): Unit = {
-    //if (i <= NumberToHighlight) g.setColor(Color.RED)
-    g.setColor(Color.BLACK)
+    if (eliteGenomeWeights.contains(s.brain.weights)) {
+      g.setColor(Color.RED)
+    } else {
+      g.setColor(Color.BLACK)
+    }
 
     val oldTransform: AffineTransform = g.getTransform
     g.rotate(s.rotation, s.position.x, s.position.y)

@@ -23,7 +23,7 @@ case class MineSweeper private (
       lookAt.y
     )
     val output = brain.update(inputs)
-    assert(output.size == 2, output.size + " outputs doesn't equal expected 2")
+    assert(output.size == 2, s"${output.size} outputs doesn't equal expected 2")
 
     val leftTrack = output(0)
     val rightTrack = output(1)

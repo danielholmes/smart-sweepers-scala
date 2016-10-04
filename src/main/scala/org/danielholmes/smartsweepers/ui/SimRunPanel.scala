@@ -2,7 +2,8 @@ package org.danielholmes.smartsweepers.ui
 
 import java.util.{Timer, TimerTask}
 
-import org.danielholmes.smartsweepers.nn.NeuralNet
+import org.danielholmes.smartsweepers.ga.{GenerationResults, GenomeResult}
+import org.danielholmes.smartsweepers.nn.NeuralNetFactory
 import org.danielholmes.smartsweepers.sim._
 
 import scala.swing.{BoxPanel, Graphics2D, Orientation}
@@ -12,18 +13,21 @@ class SimRunPanel(
   private val simSize: Size,
   private val numMines: Int,
   private val framesPerSecond: Int,
-  private val brains: List[NeuralNet]
+  private val results: List[GenomeResult],
+  private val nnFactory: NeuralNetFactory
 ) extends BoxPanel(Orientation.Vertical) {
   private val randomiser = new Random()
 
   private var sim = Simulation(
     simSize,
-    brains.map(b => MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2))
+    results.map(_.genome)
+      .map(p => nnFactory.createFromWeights(p.weights))
+      .map(b => MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2))
       .map(_.asInstanceOf[SimItem]) ++
       List.fill(numMines) { Mine(Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height)) }
   )
 
-  private val displayPanel = new SimDisplayPanel(sim)
+  private val displayPanel = new SimDisplayPanel(sim, results)
   private val timer = new Timer
   private val stepMillis = 1000 / framesPerSecond
 

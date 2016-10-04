@@ -1,12 +1,9 @@
 package org.danielholmes.smartsweepers
 
-import java.net.URISyntaxException
-import java.nio.file.Paths
 import java.time.Duration
 
-import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, CollectMinesFitness}
+import org.danielholmes.smartsweepers.ga.{CollectMinesFitness, GenerationResults, GeneticAlgorithmEnvironment, Genome}
 import org.danielholmes.smartsweepers.nn.{NeuralNetFactory, NeuronFactory}
-import org.danielholmes.smartsweepers.original.CParams
 import org.danielholmes.smartsweepers.sim.Size
 import org.danielholmes.smartsweepers.ui.{ResultsGraphPanel, SimRunPanel}
 
@@ -14,29 +11,29 @@ import scala.swing._
 import scala.swing.event.ButtonClicked
 
 object Main extends SimpleSwingApplication {
-  loadInConfigParameters()
+  val config = Config.loadFromResource("params.ini")
 
-  val simSize = Size(400, 400)
+  val simSize = Size(config.areaWidth, config.areaHeight)
   var allResults: List[GenerationSummary] = List.empty
   var population: List[Genome] = List.empty
-  var lastPopulation: List[Genome] = List.empty
+  var lastResults: Option[GenerationResults] = None
   val nnFactory = new NeuralNetFactory(
-    numOutputs = CParams.iNumOutputs,
-    neuronsPerHiddenLayer = CParams.iNeuronsPerHiddenLayer,
-    numHiddenLayers = CParams.iNumHidden,
-    numInputs = CParams.iNumInputs,
-    neuronFactory = new NeuronFactory(CParams.dBias, CParams.dActivationResponse)
+    numOutputs = config.numOutputs,
+    neuronsPerHiddenLayer = config.numNeuronsPerHiddenLayer,
+    numHiddenLayers = config.numHiddenLayers,
+    numInputs = config.numInputs,
+    neuronFactory = new NeuronFactory(config.bias, config.activationResponse)
   )
   val ga = new GeneticAlgorithmEnvironment(
-    crossoverRate = 0.7,
-    mutationRate = 0.1,
-    numElites = 4,
-    numEliteCopies = 1,
-    maxPerturbation = 0.3,
+    crossoverRate = config.crossoverRate,
+    mutationRate = config.mutationRate,
+    numElites = config.numElite,
+    numEliteCopies = config.numCopiesElite,
+    maxPerturbation = config.maxPerturbation,
     fitness = new CollectMinesFitness(
       size=simSize,
-      numTicks=CParams.iNumTicks,
-      numMines=CParams.iNumMines,
+      numTicks=config.numTicks,
+      numMines=config.numMines,
       neuralNetFactory=nnFactory
     )
   )
@@ -130,12 +127,13 @@ object Main extends SimpleSwingApplication {
   private def openSim(): Unit = {
     val simFrame = new Frame {
       title = s"Smart Sweepers - Generation ${results.size}"
-      minimumSize = new Dimension(400, 400)
+      minimumSize = new Dimension(simSize.width, simSize.height)
       val runPanel = new SimRunPanel(
         simSize = simSize,
-        numMines = CParams.iNumMines,
-        framesPerSecond = CParams.iFramesPerSecond,
-        brains = population.map(p => nnFactory.createFromWeights(p.weights))
+        numMines = config.numMines,
+        framesPerSecond = config.framesPerSecond,
+        results = lastResults.get.performance,
+        nnFactory = nnFactory
       )
       runPanel.minimumSize = minimumSize
       contents = runPanel
@@ -149,8 +147,8 @@ object Main extends SimpleSwingApplication {
   }
 
   private def createSimulation(): Unit = {
-    population = List.fill(CParams.iNumSweepers) { Genome(nnFactory.createRandom().weights) }
-    lastPopulation = population
+    population = List.fill(config.numSweepers) { Genome(nnFactory.createRandom().weights) }
+    lastResults = None
   }
 
   private def runLoop(): Unit = {
@@ -159,7 +157,7 @@ object Main extends SimpleSwingApplication {
     val timeTook = System.currentTimeMillis() - start
     results = results :+ GenerationSummary(newResults.maxFitness, newResults.averageFitness, Duration.ofMillis(timeTook))
 
-    lastPopulation = newResults.performance.map(_.genome).toList
+    lastResults = Some(newResults)
     population = newResults.nextPopulation
 
     draw()
@@ -169,6 +167,7 @@ object Main extends SimpleSwingApplication {
     startButton.visible = !_running
     stopButton.visible = _running
     resetButton.enabled = !_running
+    openSimButton.enabled = lastResults.isDefined
 
     def formatDouble(d: Double) = f"$d%1.1f"
 
@@ -184,13 +183,5 @@ object Main extends SimpleSwingApplication {
     }
 
     graphPanel.results = results
-  }
-
-  private def loadInConfigParameters() {
-    try {
-      CParams.LoadInParameters(Paths.get(Thread.currentThread.getContextClassLoader.getResource("params.ini").toURI))
-    } catch {
-      case e: URISyntaxException => throw new RuntimeException(e)
-    }
   }
 }
