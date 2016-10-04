@@ -2,6 +2,7 @@ package org.danielholmes.smartsweepers.nn
 
 case class Neuron(inputWeights: List[Double], biasWeight: Double, bias: Double, activationResponse: Double) {
   require(inputWeights.nonEmpty)
+  require(activationResponse != 0)
 
   val numInputs = inputWeights.size
   val numberOfWeights = numInputs + 1
@@ -10,7 +11,7 @@ case class Neuron(inputWeights: List[Double], biasWeight: Double, bias: Double, 
 
   def getActivation(inputs: List[Double]): Double = {
     require(inputs.size == inputWeights.size, s"inputs ${inputs.size} should = ${inputWeights.size}")
-    sigmoid(getNetInput(inputs), activationResponse)
+    sigmoid(getNetInput(inputs))
   }
 
   private def getNetInput(inputs: List[Double]): Double = {
@@ -20,5 +21,5 @@ case class Neuron(inputWeights: List[Double], biasWeight: Double, bias: Double, 
       .sum + (bias * biasWeight)
   }
 
-  private def sigmoid(netInput: Double, response: Double): Double = 1 / (1 + Math.exp(-netInput / response))
+  private def sigmoid(netInput: Double): Double = 1 / (1 + Math.exp(-netInput / activationResponse))
 }

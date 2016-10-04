@@ -24,8 +24,6 @@ object CParams {
             case "iNumOutputs" => iNumOutputs = Integer.parseInt(value)
             case "dActivationResponse" => dActivationResponse = Double.parseDouble(value)
             case "dBias" => dBias = Double.parseDouble(value)
-            case "dMaxTurnRate" => dMaxTurnRate = Double.parseDouble(value)
-            case "dMaxSpeed" => dMaxSpeed = Double.parseDouble(value)
             case "iNumMines" => iNumMines = Integer.parseInt(value)
             case "iNumSweepers" => iNumSweepers = Integer.parseInt(value)
             case "iNumTicks" => iNumTicks = Integer.parseInt(value)
@@ -54,8 +52,6 @@ object CParams {
   var iNumOutputs: Int = 0
   var dActivationResponse: Double = 1.0
   var dBias: Double = -1.0
-  var dMaxTurnRate: Double = 0.0
-  var dMaxSpeed: Double = 0.0
   var iNumSweepers: Int = 0
   var iNumMines: Int = 0
   var iNumTicks: Int = 0

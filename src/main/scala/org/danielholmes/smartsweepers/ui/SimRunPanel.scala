@@ -16,10 +16,11 @@ class SimRunPanel(
 ) extends BoxPanel(Orientation.Vertical) {
   private val randomiser = new Random()
 
-  private var sim = new Simulation(
+  private var sim = Simulation(
     simSize,
-    brains.map(b => new MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2)),
-    List.fill(numMines) { Mine(Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height)) }
+    brains.map(b => MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2))
+      .map(_.asInstanceOf[SimItem]) ++
+      List.fill(numMines) { Mine(Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height)) }
   )
 
   private val displayPanel = new SimDisplayPanel(sim)

@@ -1,6 +1,5 @@
-package org.danielholmes.nnmine.nn
+package org.danielholmes.smartsweepers.nn
 
-import org.danielholmes.smartsweepers.nn.{Neuron, NeuronLayer}
 import org.scalatest._
 
 class NeuronLayerSpec extends FlatSpec with Matchers {

@@ -1,6 +1,5 @@
-package org.danielholmes.nnmine.ga
+package org.danielholmes.smartsweepers.ga
 
-import org.danielholmes.smartsweepers.ga.{FixedFitness, GeneticAlgorithmEnvironment, Genome}
 import org.scalatest._
 
 class GeneticAlgorithmEnvironmentSpec extends FlatSpec with Matchers {
@@ -24,16 +23,25 @@ class GeneticAlgorithmEnvironmentSpec extends FlatSpec with Matchers {
   }
 
   it should "keep elites in next population" in {
+    val best1 = Genome(List.fill(44) { 10 })
+    val best2 = Genome(List.fill(44) { 10 })
     val ga = new GeneticAlgorithmEnvironment(
       crossoverRate = 0,
       mutationRate = 0,
       numElites = 2,
       numEliteCopies = 2,
       maxPerturbation = 5,
-      fitness = new FixedFitness(0)
+      fitness = new Fitness {
+        override def calculate(population: List[Genome]): List[GenomeResult] =
+          population.map(g =>
+            GenomeResult(g, if (g == best1 || g == best2) {
+              1
+            } else {
+              0
+            })
+          )
+      }
     )
-    val best1 = Genome(List.fill(44) { 10 })
-    val best2 = Genome(List.fill(44) { 10 })
     val results = ga.runGeneration(List(
       best1,
       Genome(List.fill(44) { 9 }),

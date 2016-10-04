@@ -10,7 +10,13 @@ case class Vector2D(x: Double, y: Double) {
   lazy val length = Math.sqrt(x * x + y * y)
 
   // TODO: Investigate this. Doing in constructor seems to break GA
-  def normalised: Vector2D  = Vector2D(x / length, y / length)
+  def normalised: Vector2D = {
+    if (length == 0) {
+      this
+    } else {
+      Vector2D(x / length, y / length)
+    }
+  }
 
   def dotProduct(other: Vector2D): Double = x * other.x + y * other.y
 

@@ -7,8 +7,6 @@ class NeuralNetFactory(
   private val numHiddenLayers: Int,
   private val numInputs: Int
 ) {
-  private val totalLayers = 1 + numHiddenLayers
-
   def createRandom(): NeuralNet = {
     new NeuralNet(
       {
@@ -19,8 +17,7 @@ class NeuralNetFactory(
         } else {
           List(createRandomNeuronLayer(numOutputs, numInputs))
         }
-      },
-      neuronFactory
+      }
     )
   }
 
@@ -41,12 +38,11 @@ class NeuralNetFactory(
               neuronFactory(newInputWeights, biasWeight)
             })
         )
-      }),
-      neuronFactory
+      })
     )
   }
 
-  private def createRandomNeuronLayer(aNumNeurons: Int, aNumInputsPerNeuron: Int): NeuronLayer = {
-    NeuronLayer(List.fill(aNumNeurons) { neuronFactory(aNumInputsPerNeuron) })
+  private def createRandomNeuronLayer(layerNumNeurons: Int, layerNumInputsPerNeuron: Int): NeuronLayer = {
+    NeuronLayer(List.fill(layerNumNeurons) { neuronFactory(layerNumInputsPerNeuron) })
   }
 }

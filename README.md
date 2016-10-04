@@ -14,8 +14,8 @@ Feedforward Neural Network with supervised learning (a simulation environment) u
 ## Tests
 
  - All: `sbt test`
- - Individual: `sbt 'test-only org.danielholmes.nnmine.nn.NeuralNetSpec'`
- - Individual continuous: `sbt ~'test-only org.danielholmes.nnmine.nn.NeuralNetSpec'`
+ - Individual: `sbt 'test-only org.danielholmes.smartsweepers.nn.NeuralNetSpec'`
+ - Individual continuous: `sbt ~'test-only org.danielholmes.smartsweepers.nn.NeuralNetSpec'`
 
 
 ## Running

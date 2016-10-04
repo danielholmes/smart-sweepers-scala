@@ -4,7 +4,7 @@ import java.net.URISyntaxException
 import java.nio.file.Paths
 import java.time.Duration
 
-import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, SimulationFitness}
+import org.danielholmes.smartsweepers.ga.{GeneticAlgorithmEnvironment, Genome, CollectMinesFitness}
 import org.danielholmes.smartsweepers.nn.{NeuralNetFactory, NeuronFactory}
 import org.danielholmes.smartsweepers.original.CParams
 import org.danielholmes.smartsweepers.sim.Size
@@ -33,7 +33,7 @@ object Main extends SimpleSwingApplication {
     numElites = 4,
     numEliteCopies = 1,
     maxPerturbation = 0.3,
-    fitness = new SimulationFitness(
+    fitness = new CollectMinesFitness(
       size=simSize,
       numTicks=CParams.iNumTicks,
       numMines=CParams.iNumMines,

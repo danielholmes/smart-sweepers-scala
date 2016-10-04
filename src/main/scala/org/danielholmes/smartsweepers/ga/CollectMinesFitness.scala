@@ -6,7 +6,7 @@ import org.danielholmes.smartsweepers.sim._
 import scala.annotation.tailrec
 import scala.util.Random
 
-class SimulationFitness(
+class CollectMinesFitness(
   private val size: Size,
   private val numTicks: Int,
   private val numMines: Int,
@@ -15,12 +15,13 @@ class SimulationFitness(
   private val randomiser = new Random()
 
   override def calculate(population: List[Genome]): List[GenomeResult] = {
-    val sim = new Simulation(
+    val sim = Simulation(
       size,
       population.map(_.weights)
         .map(neuralNetFactory.createFromWeights)
-        .map(new MineSweeper(_, size.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2)),
-      mines = List.fill(numMines) { Mine(size.createRandomPosition()) }
+        .map(MineSweeper(_, size.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2))
+        .map(_.asInstanceOf[SimItem]) ++
+        List.fill(numMines) { Mine(size.createRandomPosition()) }
     )
 
     val finalSim = runSim(0, sim)
