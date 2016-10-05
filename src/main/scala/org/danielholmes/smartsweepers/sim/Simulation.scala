@@ -1,15 +1,16 @@
 package org.danielholmes.smartsweepers.sim
 
 import scala.annotation.tailrec
-import scala.util.Random
 
 case class Simulation(private val size: Size, items: List[SimItem]) {
-  def mines = items.filter(_.isInstanceOf[Mine]).map(_.asInstanceOf[Mine])
-  def sweepers = items.filter(_.isInstanceOf[MineSweeper]).map(_.asInstanceOf[MineSweeper])
+  lazy val mines = items.filter(_.isInstanceOf[Mine]).map(_.asInstanceOf[Mine])
+  lazy val sweepers = items.filter(_.isInstanceOf[MineSweeper]).map(_.asInstanceOf[MineSweeper])
+  lazy val rocks = items.filter(_.isInstanceOf[Rock]).map(_.asInstanceOf[Rock])
 
   def update(): Simulation = {
     val newItems = items.map(_.update(this)).map(constrainToBounds)
     val mines = newItems.filter(_.isInstanceOf[Mine]).map(_.asInstanceOf[Mine])
+    //val rocks = newItems.filter(_.isInstanceOf[Rock]).map(_.asInstanceOf[Rock])
     Simulation(size, hitMines(newItems, mines))
   }
 
@@ -38,18 +39,44 @@ case class Simulation(private val size: Size, items: List[SimItem]) {
     }
   }
 
-  private def createRandomMine(): Mine = {
-    Mine(Vector2D(Simulation.randomiser.nextDouble * size.width, Simulation.randomiser.nextDouble * size.height))
+  private def createRandomMine(): Mine = Mine(size.createRandomPosition())
+
+  /*@tailrec
+  private def hitRocks(newItems: List[SimItem], rocks: List[Rock]): List[SimItem] = {
+    val sweepers = newItems.filter(_.isInstanceOf[MineSweeper]).map(_.asInstanceOf[MineSweeper])
+
+    rocks match {
+      case Nil => newItems
+      case r :: rs => hitRocks(hitRock(newItems, r, sweepers), rs)
+    }
   }
 
+  @tailrec
+  private def hitRock(newItems: List[SimItem], r: Rock, sweepers: List[MineSweeper]): List[SimItem] = {
+    println("Hit rock")
+    sweepers match {
+      case Nil => newItems
+      case s :: ss =>
+        if (s.isHitting(r)) {
+          val newNewItems = newItems.filter(i => i != s && i != r) :+ createRandomRock() :+ s.hitRock()
+          assert(newNewItems.size == newItems.size)
+          newNewItems
+        } else {
+          hitRock(newItems, r, ss)
+        }
+    }
+  }
+
+  private def createRandomRock(): Rock = Rock(size.createRandomPosition())*/
+
   private def constrainToBounds(i: SimItem): SimItem = i match {
-    case m: Mine => m
-    case s: MineSweeper => s.moveTo(
+    case s: MineSweeper => s.teleportTo(
       Vector2D(
         wrap(s.position.x, 0, size.width),
         wrap(s.position.y, 0, size.height)
       )
     )
+    case _ => i
   }
 
   private def wrap(x: Double, min: Double, max: Double): Double = {
@@ -61,8 +88,4 @@ case class Simulation(private val size: Size, items: List[SimItem]) {
       x
     }
   }
-}
-
-object Simulation {
-  private val randomiser = new Random
 }

@@ -12,6 +12,7 @@ import scala.util.Random
 class SimRunPanel(
   private val simSize: Size,
   private val numMines: Int,
+  private val numRocks: Int,
   private val framesPerSecond: Int,
   private val results: List[GenomeResult],
   private val nnFactory: NeuralNetFactory
@@ -24,7 +25,8 @@ class SimRunPanel(
       .map(p => nnFactory.createFromWeights(p.weights))
       .map(b => MineSweeper(b, simSize.createRandomPosition(), randomiser.nextDouble() * Math.PI * 2))
       .map(_.asInstanceOf[SimItem]) ++
-      List.fill(numMines) { Mine(Vector2D(randomiser.nextDouble * simSize.width, randomiser.nextDouble * simSize.height)) }
+      List.fill(numMines) { Mine(simSize.createRandomPosition()) } ++
+      List.fill(numRocks) { Rock(simSize.createRandomPosition()) }
   )
 
   private val displayPanel = new SimDisplayPanel(sim, results)

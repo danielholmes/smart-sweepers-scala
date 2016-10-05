@@ -2,7 +2,7 @@ package org.danielholmes.smartsweepers
 
 import java.time.Duration
 
-import org.danielholmes.smartsweepers.ga.{CollectMinesFitness, GenerationResults, GeneticAlgorithmEnvironment, Genome}
+import org.danielholmes.smartsweepers.ga._
 import org.danielholmes.smartsweepers.nn.{NeuralNetFactory, NeuronFactory}
 import org.danielholmes.smartsweepers.sim.Size
 import org.danielholmes.smartsweepers.ui.{ResultsGraphPanel, SimRunPanel}
@@ -21,21 +21,43 @@ object Main extends SimpleSwingApplication {
     numOutputs = config.numOutputs,
     neuronsPerHiddenLayer = config.numNeuronsPerHiddenLayer,
     numHiddenLayers = config.numHiddenLayers,
-    numInputs = config.numInputs,
+    numInputs = 4,
     neuronFactory = new NeuronFactory(config.bias, config.activationResponse)
   )
+  // Evolves spinning behaviour
+  /*val fitness = new AvoidMinesFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    neuralNetFactory=nnFactory
+  )*/
+  val fitness = new CollectMinesFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    neuralNetFactory=nnFactory
+  )
+  /*val fitness = new AvoidMinesWhileTravellingFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    neuralNetFactory=nnFactory
+  )*/
+  // Scrapped for the moment - requires more inputs (closest rock)
+  /*val fitness = new CollectMinesAvoidRocksFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    numRocks=config.numRocks,
+    neuralNetFactory=nnFactory
+  )*/
   val ga = new GeneticAlgorithmEnvironment(
     crossoverRate = config.crossoverRate,
     mutationRate = config.mutationRate,
     numElites = config.numElite,
     numEliteCopies = config.numCopiesElite,
     maxPerturbation = config.maxPerturbation,
-    fitness = new CollectMinesFitness(
-      size=simSize,
-      numTicks=config.numTicks,
-      numMines=config.numMines,
-      neuralNetFactory=nnFactory
-    )
+    fitness = fitness
   )
 
   var _running = false
@@ -56,16 +78,17 @@ object Main extends SimpleSwingApplication {
   val highestFitnessEverLabel = new Label
   val gpsLabel = new Label
 
+  val frameDimensions = new Dimension(600, 600)
   val toolBar = new FlowPanel {
-    maximumSize = new Dimension(500, 30)
+    maximumSize = new Dimension(frameDimensions.width, 30)
 
-    contents += resetButton
     contents += startButton
     contents += stopButton
+    contents += resetButton
     contents += openSimButton
   }
   val statsBar = new FlowPanel {
-    maximumSize = new Dimension(500, 30)
+    maximumSize = new Dimension(frameDimensions.width, 30)
 
     contents += generationNumberLabel
     contents += maxFitnessLabel
@@ -75,12 +98,12 @@ object Main extends SimpleSwingApplication {
   }
 
   val graphPanel = new ResultsGraphPanel {
-    minimumSize = new Dimension(500, 400)
+    minimumSize = new Dimension(frameDimensions.width, frameDimensions.height - 100)
   }
 
   def top = new MainFrame() {
     title = "Smart Sweepers"
-    minimumSize = new Dimension(500, 500)
+    minimumSize = frameDimensions
     contents = new BoxPanel(Orientation.Vertical) {
       contents += toolBar
       contents += statsBar
@@ -131,6 +154,7 @@ object Main extends SimpleSwingApplication {
       val runPanel = new SimRunPanel(
         simSize = simSize,
         numMines = config.numMines,
+        numRocks = config.numRocks,
         framesPerSecond = config.framesPerSecond,
         results = lastResults.get.performance,
         nnFactory = nnFactory

@@ -4,7 +4,7 @@ import java.awt.Color
 import java.awt.geom.AffineTransform
 
 import org.danielholmes.smartsweepers.ga.GenomeResult
-import org.danielholmes.smartsweepers.sim.{Mine, MineSweeper, SimItem, Simulation}
+import org.danielholmes.smartsweepers.sim._
 
 import scala.annotation.tailrec
 import scala.swing.{Graphics2D, Panel}
@@ -34,6 +34,10 @@ class SimDisplayPanel(private var _sim: Simulation, private val results: List[Ge
         renderMine(g, items.head.asInstanceOf[Mine])
         renderItems(g, xs)
       }
+      case Rock(_) :: xs => {
+        renderRock(g, items.head.asInstanceOf[Rock])
+        renderItems(g, xs)
+      }
       case x :: xs => {
         renderMineSweeper(g, x.asInstanceOf[MineSweeper])
         renderItems(g, xs)
@@ -41,9 +45,14 @@ class SimDisplayPanel(private var _sim: Simulation, private val results: List[Ge
     }
   }
 
-  private def renderMine(g: Graphics2D, mine: Mine): Unit = {
+  private def renderMine(g: Graphics2D, m: Mine): Unit = {
     g.setColor(Color.GREEN)
-    g.drawRect((mine.position.x - mine.size).toInt, (mine.position.y - mine.size).toInt, mine.size * 2, mine.size * 2)
+    g.drawRect((m.position.x - m.size).toInt, (m.position.y - m.size).toInt, m.size * 2, m.size * 2)
+  }
+
+  private def renderRock(g: Graphics2D, r: Rock): Unit = {
+    g.setColor(Color.ORANGE)
+    g.drawRect((r.position.x - r.size).toInt, (r.position.y - r.size).toInt, r.size * 2, r.size * 2)
   }
 
   private def renderMineSweeper(g: Graphics2D, s: MineSweeper): Unit = {
