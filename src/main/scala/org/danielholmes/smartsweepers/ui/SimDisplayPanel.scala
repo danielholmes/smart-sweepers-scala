@@ -51,13 +51,13 @@ class SimDisplayPanel(private var _sim: Simulation, private val results: List[Ge
   }
 
   private def renderRock(g: Graphics2D, r: Rock): Unit = {
-    g.setColor(Color.ORANGE)
+    g.setColor(Color.RED)
     g.drawRect((r.position.x - r.size).toInt, (r.position.y - r.size).toInt, r.size * 2, r.size * 2)
   }
 
   private def renderMineSweeper(g: Graphics2D, s: MineSweeper): Unit = {
     if (eliteGenomeWeights.contains(s.brain.weights)) {
-      g.setColor(Color.RED)
+      g.setColor(Color.BLUE)
     } else {
       g.setColor(Color.BLACK)
     }

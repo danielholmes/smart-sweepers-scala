@@ -5,25 +5,29 @@ import org.danielholmes.smartsweepers.nn.NeuralNet
 import scala.math.{max, min}
 
 case class MineSweeper private (
-                                 brain: NeuralNet,
-                                 position: Vector2D,
-                                 rotation: Double,
-                                 numMinesCollected: Int,
-                                 numRocksHit: Int,
-                                 distanceMoved: Double,
-                                 private val lookAt: Vector2D
+  brain: NeuralNet,
+  position: Vector2D,
+  rotation: Double,
+  numMinesCollected: Int,
+  numRocksHit: Int,
+  distanceMoved: Double,
+  private val lookAt: Vector2D
 ) extends SimItem {
   val size = 5
 
   override def update(sim: Simulation): SimItem = {
-    val toClosestMine = getVectorToClosestMine(sim.mines).normalised
+    val toClosestMine = getVectorToClosestPosition(sim.mines.map(_.position)).normalised
+    val toClosestRock = getVectorToClosestPosition(sim.rocks.map(_.position)).normalised
 
     val inputs = List(
       toClosestMine.x,
       toClosestMine.y,
+      toClosestRock.x,
+      toClosestRock.y,
       lookAt.x,
       lookAt.y
     )
+    assert(inputs.size == MineSweeper.NumBrainInputs)
     val output = brain.update(inputs)
     assert(output.size == 2, s"${output.size} outputs doesn't equal expected 2")
 
@@ -65,9 +69,10 @@ case class MineSweeper private (
     }
   }
 
-  private def getVectorToClosestMine(mines: List[Mine]): Vector2D = {
-    require(mines.nonEmpty)
-    mines.map(position - _.position).minBy(_.length)
+  // Might this be better if its the vector to touch rather than direct centre?
+  private def getVectorToClosestPosition(positions: List[Vector2D]): Vector2D = {
+    require(positions.nonEmpty)
+    positions.map(position - _).minBy(_.length)
   }
 
   def isHitting(m: Mine): Boolean = isHitting(m.position, m.size)
@@ -102,6 +107,7 @@ case class MineSweeper private (
 
 object MineSweeper {
   val MaxTurnRate = 0.3
+  val NumBrainInputs = 6
 
   def apply(brain: NeuralNet, position: Vector2D, rotation: Double): MineSweeper =
     MineSweeper(brain, position, rotation, 0, 0, 0, Vector2D())

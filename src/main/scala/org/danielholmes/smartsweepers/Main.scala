@@ -4,7 +4,7 @@ import java.time.Duration
 
 import org.danielholmes.smartsweepers.ga._
 import org.danielholmes.smartsweepers.nn.{NeuralNetFactory, NeuronFactory}
-import org.danielholmes.smartsweepers.sim.Size
+import org.danielholmes.smartsweepers.sim.{MineSweeper, Size}
 import org.danielholmes.smartsweepers.ui.{ResultsGraphPanel, SimRunPanel}
 
 import scala.swing._
@@ -21,36 +21,38 @@ object Main extends SimpleSwingApplication {
     numOutputs = config.numOutputs,
     neuronsPerHiddenLayer = config.numNeuronsPerHiddenLayer,
     numHiddenLayers = config.numHiddenLayers,
-    numInputs = 4,
+    numInputs = MineSweeper.NumBrainInputs,
     neuronFactory = new NeuronFactory(config.bias, config.activationResponse)
   )
   // Evolves spinning behaviour
-  /*val fitness = new AvoidMinesFitness(
-    size=simSize,
-    numTicks=config.numTicks,
-    numMines=config.numMines,
-    neuralNetFactory=nnFactory
-  )*/
-  val fitness = new CollectMinesFitness(
-    size=simSize,
-    numTicks=config.numTicks,
-    numMines=config.numMines,
-    neuralNetFactory=nnFactory
-  )
-  /*val fitness = new AvoidMinesWhileTravellingFitness(
-    size=simSize,
-    numTicks=config.numTicks,
-    numMines=config.numMines,
-    neuralNetFactory=nnFactory
-  )*/
-  // Scrapped for the moment - requires more inputs (closest rock)
-  /*val fitness = new CollectMinesAvoidRocksFitness(
+  /*val fitness = new AvoidRocksFitness(
     size=simSize,
     numTicks=config.numTicks,
     numMines=config.numMines,
     numRocks=config.numRocks,
     neuralNetFactory=nnFactory
   )*/
+  /*val fitness = new CollectMinesFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    numRocks=config.numRocks,
+    neuralNetFactory=nnFactory
+  )*/
+  /*val fitness = new AvoidMinesWhileTravellingFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    numRocks=config.numRocks,
+    neuralNetFactory=nnFactory
+  )*/
+  val fitness = new CollectMinesAvoidRocksFitness(
+    size=simSize,
+    numTicks=config.numTicks,
+    numMines=config.numMines,
+    numRocks=config.numRocks,
+    neuralNetFactory=nnFactory
+  )
   val ga = new GeneticAlgorithmEnvironment(
     crossoverRate = config.crossoverRate,
     mutationRate = config.mutationRate,

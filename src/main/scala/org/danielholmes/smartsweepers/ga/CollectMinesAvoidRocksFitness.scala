@@ -11,5 +11,5 @@ class CollectMinesAvoidRocksFitness(
   private val neuralNetFactory: NeuralNetFactory
 ) extends SimulationFitness(size, numTicks, numMines, numRocks, neuralNetFactory) {
   override protected def createResults(sim: Simulation): List[GenomeResult] =
-    sim.sweepers.map(s => GenomeResult(Genome(s.brain.weights), s.numMinesCollected - s.numRocksHit))
+    sim.sweepers.map(s => GenomeResult(Genome(s.brain.weights), s.numMinesCollected - s.numRocksHit * 2))
 }

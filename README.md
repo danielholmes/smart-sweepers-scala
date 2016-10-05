@@ -23,7 +23,15 @@ Feedforward Neural Network with supervised learning (a simulation environment) u
 `sbt run`
 
 
-## Ideas
- 
- - Possibly more expensive, but is running in isolation better? Atm their fitness is impacted by other agents getting to 
-   mines before them
+## Observations
+
+I've included a few different fitness strategies. They require some fine tuning to the environment - especially the
+avoidance fitnesses. For example a fitness to collect mines and avoid rocks - if you punish rock hitting too much then
+a spin on the spot strategy is developed (same as the simple avoid only fitnesses)
+
+
+## TODO
+
+ - Move params.ini and fitness selection into a UI
+ - Graph negative fitnesses better
+ - Try a mutable Simulation vs immutable/fully functional to see performance differences
