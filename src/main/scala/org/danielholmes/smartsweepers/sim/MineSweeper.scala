@@ -42,12 +42,9 @@ case class MineSweeper private (
     val movement = newLookAt * speed
     val newPosition = position + movement
 
-    MineSweeper(
-      brain = brain,
+    copy(
       position = newPosition,
       rotation = newRotation,
-      numMinesCollected = numMinesCollected,
-      numRocksHit = numRocksHit,
       distanceMoved = distanceMoved + movement.length,
       lookAt = newLookAt
     )
@@ -57,15 +54,7 @@ case class MineSweeper private (
     if (newPosition == position) {
       this
     } else {
-      MineSweeper(
-        brain = brain,
-        position = newPosition,
-        rotation = rotation,
-        numMinesCollected = numMinesCollected,
-        numRocksHit = numRocksHit,
-        distanceMoved = distanceMoved,
-        lookAt = lookAt
-      )
+      copy(position = newPosition)
     }
   }
 
@@ -84,25 +73,9 @@ case class MineSweeper private (
     distanceToObject.length < (size + targetSize)
   }
 
-  def collectMine(): MineSweeper = MineSweeper(
-    brain = brain,
-    position = position,
-    rotation = rotation,
-    numMinesCollected = numMinesCollected + 1,
-    numRocksHit = numRocksHit,
-    distanceMoved = distanceMoved,
-    lookAt = lookAt
-  )
+  def collectMine(): MineSweeper = copy(numMinesCollected = numMinesCollected + 1)
 
-  def hitRock(): MineSweeper = MineSweeper(
-    brain = brain,
-    position = position,
-    rotation = rotation,
-    numMinesCollected = numMinesCollected,
-    numRocksHit = numRocksHit + 1,
-    distanceMoved = distanceMoved,
-    lookAt = lookAt
-  )
+  def hitRock(): MineSweeper = copy(numRocksHit = numRocksHit + 1)
 }
 
 object MineSweeper {
