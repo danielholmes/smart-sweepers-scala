@@ -11,9 +11,8 @@ case class Simulation(private val size: Size, items: List[SimItem]) {
     val newItems = items.map(_.update(this)).map(constrainToBounds)
     val mines = newItems.filter(_.isInstanceOf[Mine]).map(_.asInstanceOf[Mine])
     val rocks = newItems.filter(_.isInstanceOf[Rock]).map(_.asInstanceOf[Rock])
-    Simulation(
-      size,
-      hitRocks(
+    copy(
+      items=hitRocks(
         hitMines(newItems, mines),
         rocks
       )

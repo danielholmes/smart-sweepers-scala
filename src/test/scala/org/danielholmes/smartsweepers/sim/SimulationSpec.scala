@@ -11,13 +11,14 @@ class SimulationSpec extends FlatSpec with Matchers {
         MineSweeper(
           brain = new NeuralNet(List(
             NeuronLayer(List(
-              Neuron(List(0, 0, 0, 0), 0, 0, 1),
-              Neuron(List(0, 0, 0, 0), 0, 0, 1)
+              Neuron(List(0, 0, 0, 0, 0, 0), 0, 0, 1),
+              Neuron(List(0, 0, 0, 0, 0, 0), 0, 0, 1)
             ))
           )),
           position = Vector2D(10, 10),
           rotation = 0
         ),
+        Rock(Vector2D(10, 10)),
         Mine(Vector2D(10, 10))
       )
     )
@@ -35,8 +36,8 @@ class SimulationSpec extends FlatSpec with Matchers {
         MineSweeper(
           brain = new NeuralNet(List(
             NeuronLayer(List(
-              Neuron(List(0, 0, 0, 0), 0, 0, 1),
-              Neuron(List(0, 0, 0, 0), 0, 0, 1)
+              Neuron(List(0, 0, 0, 0, 0, 0), 0, 0, 1),
+              Neuron(List(0, 0, 0, 0, 0, 0), 0, 0, 1)
             ))
           )),
           position = Vector2D(10, 10),
